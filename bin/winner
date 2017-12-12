@@ -1,0 +1,37 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+use winwin\winner\commands\LintCommand;
+use winwin\winner\commands\DumpTokenCommand;
+use winwin\winner\commands\EnumHelperCommand;
+
+foreach (array(__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php') as $file) {
+    if (file_exists($file)) {
+        $autoload = $file;
+        break;
+    }
+}
+if (!isset($autoload)) {
+    fwrite(STDERR,
+        'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+        'wget http://getcomposer.org/composer.phar' . PHP_EOL .
+        'php composer.phar install' . PHP_EOL
+    );
+
+    die(1);
+}
+require($autoload);
+unset($autoload);
+
+$app = new Application('winner', '@git-version@');
+
+$app->getHelperSet()->set(new \Deployer\Component\PharUpdate\Console\Helper());
+$selfUpdate = new \Deployer\Component\PharUpdate\Console\Command('self-update');
+$selfUpdate->setManifestUri("http://mirrors.winwin.group/winner/manifest.json");
+$app->add($selfUpdate);
+
+$app->add(new LintCommand());
+$app->add(new DumpTokenCommand());
+$app->add(new EnumHelperCommand());
+$app->run();

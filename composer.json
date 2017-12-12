@@ -1,0 +1,45 @@
+{
+    "name": "winwin/winner",
+    "type": "tools",
+    "description": "Programming utilities",
+    "keywords": [],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ye Wenbin",
+            "email": "wenbinye@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "symfony/console": "^3.0",
+        "nikic/php-parser": "^2.1",
+        "kuiper/helper": "^0.3",
+        "deployer/phar-update": "^2.0",
+        "misterion/ko-process": "^0.5.3"
+    },
+    "require-dev": {
+        "winwin/composer-phpcs-plugin": "^0.1",
+        "phpunit/phpunit": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "winwin\\winner\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "winwin\\winner\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/winner"
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.3-dev"
+        }
+    }
+}
