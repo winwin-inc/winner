@@ -24,5 +24,5 @@ winner.phar enum [-i] <file>
 批量处理目录下所有文件
 
 ```bash
-grep -R 'extends Enum' src | xargs -l winner.phar enum -i
+grep -lR 'extends Enum' src | xargs -l winner.phar enum -i
 ```
