@@ -11,7 +11,8 @@ class EnumClassVisitorTest extends TestCase
         $visitor = new EnumClassVisitor(__DIR__.'/fixtures/Gender.php');
         $visitor->scan();
 
-        $this->assertEquals(['MALE', 'FEMALE'], $visitor->getValues());
-        $this->assertEquals(['description'], $visitor->getProperties());
+        $this->assertEquals(['MALE', 'FEMALE', 'UNKNOWN'], $visitor->getValues());
+        $this->assertEquals(['description', 'intval'], $visitor->getProperties());
+        $this->assertEquals("Gender", $visitor->getClassName());
     }
 }

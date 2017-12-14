@@ -20,6 +20,11 @@ class EnumClassVisitor extends NodeVisitor
     private $stream;
 
     /**
+     * @var string
+     */
+    private $className;
+
+    /**
      * @var string[]
      */
     private $values = [];
@@ -70,6 +75,19 @@ class EnumClassVisitor extends NodeVisitor
     public function getProperties(): array
     {
         return $this->properties;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClassName(): string
+    {
+        return $this->className;
+    }
+
+    public function enterClass(Node\Stmt\Class_ $node)
+    {
+        $this->className = $node->name;
     }
 
     public function enterConst(Node\Stmt\ClassConst $node)
