@@ -26,3 +26,8 @@ winner.phar enum [-i] <file>
 ```bash
 grep -lR 'extends Enum' src | xargs -l winner.phar enum -i
 ```
+Mac下的grep语法和xargs语法跟Linux不一样   
+**Mac OSX 批量处理目录下所有文件**
+```shell
+grep -Hr 'extends Enum' src | awk -F ':' {'print $1'} |  xargs -I {} winner.phar enum -i {}
+```
