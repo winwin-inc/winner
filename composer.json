@@ -16,7 +16,8 @@
         "nikic/php-parser": "^2.1",
         "kuiper/helper": "^0.3",
         "deployer/phar-update": "^2.0",
-        "misterion/ko-process": "^0.5.3"
+        "misterion/ko-process": "^0.5.3",
+        "symfony/yaml": "^4.0"
     },
     "require-dev": {
         "winwin/composer-phpcs-plugin": "^0.1",
