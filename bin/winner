@@ -3,9 +3,11 @@
 
 use Symfony\Component\Console\Application;
 use winwin\winner\commands\CheckEnvCommand;
+use winwin\winner\commands\GenEnvCommand;
 use winwin\winner\commands\LintCommand;
 use winwin\winner\commands\DumpTokenCommand;
 use winwin\winner\commands\EnumHelperCommand;
+use winwin\winner\commands\YamlCommand;
 
 foreach (array(__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php') as $file) {
     if (file_exists($file)) {
@@ -36,4 +38,6 @@ $app->add(new LintCommand());
 $app->add(new DumpTokenCommand());
 $app->add(new EnumHelperCommand());
 $app->add(new CheckEnvCommand());
+$app->add(new YamlCommand());
+$app->add(new GenEnvCommand());
 $app->run();

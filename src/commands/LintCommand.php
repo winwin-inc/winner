@@ -84,10 +84,11 @@ class LintCommand extends Command
 
             return -1;
         }
+
         return 0;
     }
 
-    public function filter(/** @noinspection PhpUnusedParameterInspection */$current, $file, $it)
+    public function filter(/* @noinspection PhpUnusedParameterInspection */$current, $file, $it)
     {
         return !preg_match($this->excludePattern, $file)
             && is_readable($file)
