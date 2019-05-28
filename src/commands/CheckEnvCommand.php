@@ -2,6 +2,7 @@
 
 namespace winwin\winner\commands;
 
+use Dotenv\Loader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,21 +21,37 @@ class CheckEnvCommand extends Command
             ->setDescription('Check env configuration')
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Show variable file and line')
             ->addOption('env', 'e', InputOption::VALUE_REQUIRED, 'The env.yml file')
-            ->addArgument('project', InputArgument::REQUIRED, 'Project directory');
+            ->addOption('dotenv', 't', InputOption::VALUE_NONE, 'treat env file as dot env file')
+            ->addArgument('project', InputArgument::REQUIRED, 'Project directory')
+            ->addArgument('ignore', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'ignore env setting list', [])
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $ignoreList = ($input->getArgument('ignore'));
         $envFile = $input->getOption('env');
         if (!is_readable($envFile)) {
             throw new \RuntimeException("Cannot read env file '$envFile'");
         }
-        $env = Yaml::parseFile($envFile, Yaml::PARSE_CUSTOM_TAGS);
+        if ($input->getOption('dotenv')) {
+            $env = [];
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                list($name, $value) = (new Loader(null, null))->processFilters($line, null);
+                $env[$name] = $value;
+            }
+        } else {
+            $env = Yaml::parseFile($envFile, Yaml::PARSE_CUSTOM_TAGS);
+        }
 
         $project = $input->getArgument('project');
 
         $errors = [];
         foreach ($this->extractEnvVariables($project, $output) as $var) {
+            if (in_array($var['name'], $ignoreList)) {
+                continue;
+            }
             if (!isset($env[$var['name']])) {
                 $errors['missing'][$var['name']] = $var;
                 continue;
