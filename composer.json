@@ -12,12 +12,14 @@
     ],
     "require": {
         "php": "^7.0",
+        "ext-json": "*",
         "symfony/console": "^3.0",
         "nikic/php-parser": "^2.1",
         "kuiper/helper": "^0.3",
         "deployer/phar-update": "^2.0",
         "misterion/ko-process": "^0.5.3",
-        "symfony/yaml": "^3.0",
+        "winwin/support": "^0.2",
+        "symfony/yaml": "^4.0",
         "vlucas/phpdotenv": "^2.4"
     },
     "require-dev": {

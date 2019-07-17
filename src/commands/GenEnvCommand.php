@@ -18,7 +18,6 @@ class GenEnvCommand extends Command
     {
         $this->setName('gen-env')
             ->setDescription('生成 env 文件')
-            ->addOption('staging', null, InputOption::VALUE_REQUIRED, 'env staging names', 'prod,dev')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output file')
             ->addArgument('project', InputArgument::REQUIRED, 'Project directory');
     }
@@ -30,32 +29,18 @@ class GenEnvCommand extends Command
         if (!$outFile) {
             $outFile = 'php://stdout';
         }
-        $staging = $input->getOption('staging');
-        $stagings = explode(',', $staging);
         $vars = $this->extractEnvVariables($project, $output);
         $env = [];
         foreach ($vars as $var) {
-            if ($var['type'] == 'vault') {
-                foreach ($stagings as $staging) {
-                    $env[$staging][$var['name']] = new TaggedValue('password', '');
-                }
+            if ('vault' == $var['type']) {
+                $env[$var['name']] = new TaggedValue('password', '');
             } else {
-                $env[YamlCommand::BASE_KEY][$var['name']] = '';
+                $env[$var['name']] = '';
             }
         }
-        $yaml = '';
-        foreach ($env as $staging => $vars) {
-            if ($staging == YamlCommand::BASE_KEY) {
-                $yaml .= "$staging: &$staging\n";
-            } else {
-                $yaml .= "$staging:\n";
-                $yaml .= '  <<: &'.YamlCommand::BASE_KEY."\n";
-            }
-            $yaml .= preg_replace('#^#ms', '  ', Yaml::dump($vars))."\n";
-        }
-        file_put_contents($outFile, $yaml);
+        file_put_contents($outFile, Yaml::dump($env));
 
-        if ($output->isVerbose() && $outFile != 'php://stdout') {
+        if ($output->isVerbose() && 'php://stdout' != $outFile) {
             $output->writeln("<info>Save to $outFile</info>");
         }
     }
