@@ -10,6 +10,8 @@
             "email": "wenbinye@gmail.com"
         }
     ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "php": "^7.0",
         "ext-json": "*",
@@ -17,10 +19,10 @@
         "nikic/php-parser": "^2.1",
         "kuiper/helper": "^0.3",
         "deployer/phar-update": "^2.0",
-        "misterion/ko-process": "^0.5.3",
+        "misterion/ko-process": "^0.5",
         "winwin/support": "^0.2",
         "symfony/yaml": "^4.0",
-        "vlucas/phpdotenv": "^2.4"
+        "vlucas/phpdotenv": "^3.0"
     },
     "require-dev": {
         "winwin/composer-phpcs-plugin": "^0.1",
@@ -38,12 +40,5 @@
     },
     "bin": [
         "bin/winner"
-    ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.3-dev"
-        }
-    }
+    ]
 }

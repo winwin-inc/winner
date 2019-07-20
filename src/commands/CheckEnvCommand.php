@@ -2,7 +2,11 @@
 
 namespace winwin\winner\commands;
 
+use Defuse\Crypto\Core;
+use Dotenv\Environment\Adapter\ArrayAdapter;
+use Dotenv\Environment\DotenvFactory;
 use Dotenv\Loader;
+use kuiper\helper\Text;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,6 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Tag\TaggedValue;
 use Symfony\Component\Yaml\Yaml;
+use winwin\winner\VaultTags;
 
 class CheckEnvCommand extends Command
 {
@@ -35,12 +40,7 @@ class CheckEnvCommand extends Command
             throw new \RuntimeException("Cannot read env file '$envFile'");
         }
         if ($input->getOption('dotenv')) {
-            $env = [];
-            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                list($name, $value) = (new Loader(null, null))->processFilters($line, null);
-                $env[$name] = $value;
-            }
+            $env = $this->loadDotenv($envFile);
         } else {
             $env = Yaml::parseFile($envFile, Yaml::PARSE_CUSTOM_TAGS);
         }
@@ -103,5 +103,31 @@ class CheckEnvCommand extends Command
                     .($showLine ? sprintf(' # from %s:%d', $var['file'], $var['line']) : ''));
             }
         }
+    }
+
+    /**
+     * @param string $envFile
+     *
+     * @return array
+     */
+    protected function loadDotenv($envFile): array
+    {
+        $loader = new Loader([$envFile], new DotenvFactory([new ArrayAdapter()]));
+        $loader->load();
+        $env = [];
+        foreach ($loader->getEnvironmentVariableNames() as $name) {
+            $value = $loader->getEnvironmentVariable($name);
+            if ($this->looksLikeEncrypted($value)) {
+                $value = new TaggedValue(VaultTags::VAULT, $value);
+            }
+            $env[$name] = $value;
+        }
+
+        return $env;
+    }
+
+    private function looksLikeEncrypted(string $value)
+    {
+        return Text::startsWith($value, bin2hex(Core::CURRENT_VERSION));
     }
 }
