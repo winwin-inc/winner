@@ -8,8 +8,11 @@ trait ProjectEnvTrait
 {
     protected function extractEnvVariables($project, OutputInterface $output)
     {
-        $files = glob("$project/config/*.php");
-        $files = array_merge($files, glob("$project/vendor/*/*/config/*.php"));
+        $files = array_merge(
+            glob("$project/config/*.php"),
+            glob("$project/config/*/*.php"),
+            glob("$project/vendor/*/*/config/*.php")
+        );
         $vars = [];
 
         foreach ($files as $file) {
