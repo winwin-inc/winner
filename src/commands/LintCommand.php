@@ -46,6 +46,7 @@ class LintCommand extends Command
         $this->setName('lint')
             ->setDescription('Lint php code file or directory')
             ->addArgument('dir', InputArgument::OPTIONAL, 'php code directory')
+            ->addOption('php-version', 'p', InputOption::VALUE_REQUIRED, 'php version', '7.0')
             ->addOption('jobs', '-j', InputOption::VALUE_REQUIRED, 'Allow N jobs at once')
             ->addOption('exclude', '-e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'directory to exclude')
             ->addOption('autoload', '-l', InputOption::VALUE_REQUIRED, 'autoload file');
@@ -230,7 +231,7 @@ class LintCommand extends Command
             return;
         }
         $pos = strrpos($className, '\\');
-        if ($pos !== false) {
+        if (false !== $pos) {
             $namespace = substr($className, 0, $pos - 1);
             $className = substr($className, $pos);
         }

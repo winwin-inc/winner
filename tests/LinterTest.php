@@ -32,6 +32,8 @@ class LinterTest extends TestCase
     public function passedScripts()
     {
         return [
+            ['method-array-param'],
+            ['try-catch'],
             ['new-self'],
             ['new-static'],
             ['extends-full'],

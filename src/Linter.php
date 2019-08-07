@@ -26,6 +26,7 @@ class Linter extends NodeVisitor
         'Annotation' => true, 'Target' => true,
         // Widely used tags (but not existent in phpdoc)
         'fix' => true, 'fixme' => true,
+        'mixin' => true,
         'override' => true,
         // PHPDocumentor 1 tags
         'abstract' => true, 'access' => true,
@@ -121,7 +122,7 @@ class Linter extends NodeVisitor
         $code = $this->stream ? stream_get_contents($this->stream)
             : file_get_contents($this->file);
         $this->resetContext();
-        $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP5);
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
         $traverser = new NodeTraverser();
         try {
             $statements = $parser->parse($code);
@@ -195,17 +196,18 @@ class Linter extends NodeVisitor
             if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this'])) {
                 return;
             }
-            $alias = $name->getFirst();
+            $alias = (string) $name->getFirst();
             if (isset($this->context['use'][UseStmt::TYPE_NORMAL][$alias])) {
-                $parts = $name->parts;
-                array_shift($parts);
-                $namespace = $this->context['use'][UseStmt::TYPE_NORMAL][$alias]->name;
-                $class = $namespace.($parts ? '\\'.implode('\\', $parts) : '');
+                $class = (string) $this->context['use'][UseStmt::TYPE_NORMAL][$alias]->name;
+                if (count($name->parts) > 1) {
+                    $class .= '\\'.$name->slice(1);
+                }
             } else {
                 $class = $this->context['namespace'].'\\'.$name;
             }
         }
-        if (!class_exists($class) && !interface_exists($class) && !$this->isIgnoredClass($class)) {
+        if (!class_exists($class) && !interface_exists($class)
+            && !trait_exists($class) && !$this->isIgnoredClass($class)) {
             $this->classNotFoundError($name);
         }
     }
@@ -238,14 +240,14 @@ class Linter extends NodeVisitor
 
     protected function checkAnnotations(Doc $doc = null)
     {
-        if ($doc === null || !empty($this->context['class']['is_annotation'])) {
+        if (null === $doc || !empty($this->context['class']['is_annotation'])) {
             return;
         }
         $linenum = $doc->getLine();
         foreach (explode("\n", $doc->getText()) as $line) {
             if (preg_match('#\s*\*\s*\@([^ \(]+)#', $line, $matches)) {
                 $name = $matches[1];
-                if ($name === 'Annotation') {
+                if ('Annotation' === $name) {
                     $this->context['class']['is_annotation'] = true;
                     continue;
                 }
@@ -254,9 +256,6 @@ class Linter extends NodeVisitor
                     'annotation' => $line,
                 ];
                 if (preg_match('#\s*\*\s*\@(var|param|return|throws)\s*(\S+)#', $line, $matches)) {
-                    if ($matches[2] == '$this') {
-                        continue;
-                    }
                     try {
                         $this->checkTypeClassNameExists(TypeUtils::parse($matches[2]), $attributes);
                     } catch (InvalidArgumentException $e) {
@@ -274,7 +273,7 @@ class Linter extends NodeVisitor
 
     protected function checkTypeClassNameExists($type, $attributes)
     {
-        if (TypeUtils::isClass($type)) {
+        if (TypeUtils::isClass($type) && !TypeUtils::isSelf($type)) {
             $this->checkClassNameExists($type['class'], $attributes);
         } elseif (TypeUtils::isArray($type)) {
             $this->checkTypeClassNameExists($type['valueType'], $attributes);
@@ -287,7 +286,7 @@ class Linter extends NodeVisitor
 
     protected function checkClassNameExists($name, $attributes)
     {
-        if ($name[0] === '\\') {
+        if ('\\' === $name[0]) {
             $node = new Node\Name\FullyQualified(explode('\\', $name), $attributes);
         } else {
             $node = new Node\Name(explode('\\', $name), $attributes);
@@ -309,10 +308,11 @@ class Linter extends NodeVisitor
     {
         $type = $node->type;
         foreach ($node->uses as $use) {
-            if (isset($this->context['use'][$type][$use->alias])) {
+            $alias = $use->alias ? (string) $use->alias : (string) $use->name->getLast();
+            if (isset($this->context['use'][$type][$alias])) {
                 $this->conflictUseStatementError($use);
             } else {
-                $this->context['use'][$type][$use->alias] = $use;
+                $this->context['use'][$type][$alias] = $use;
             }
         }
     }
@@ -369,7 +369,13 @@ class Linter extends NodeVisitor
 
     public function enterTryCatch(Node\Stmt\Catch_ $node)
     {
-        $this->checkClassExists($node->type);
+        if (isset($node->type)) {
+            $this->checkClassExists($node->type);
+        } elseif (isset($node->types) && is_array($node->types)) {
+            foreach ($node->types as $type) {
+                $this->checkClassExists($type);
+            }
+        }
     }
 
     public function enterFuncall(Node\Expr\FuncCall $node)
