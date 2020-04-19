@@ -6,7 +6,6 @@ use Defuse\Crypto\Core;
 use Dotenv\Environment\Adapter\ArrayAdapter;
 use Dotenv\Environment\DotenvFactory;
 use Dotenv\Loader;
-use kuiper\helper\Text;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -128,6 +127,6 @@ class CheckEnvCommand extends Command
 
     private function looksLikeEncrypted(string $value)
     {
-        return Text::startsWith($value, bin2hex(Core::CURRENT_VERSION));
+        return strpos($value, bin2hex(Core::CURRENT_VERSION)) === 0;
     }
 }

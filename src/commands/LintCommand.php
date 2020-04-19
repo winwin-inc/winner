@@ -4,8 +4,6 @@ namespace winwin\winner\commands;
 
 use Ko\ProcessManager;
 use Ko\SharedMemory;
-use kuiper\helper\Arrays;
-use kuiper\helper\Text;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -93,7 +91,7 @@ class LintCommand extends Command
     {
         return !preg_match($this->excludePattern, $file)
             && is_readable($file)
-            && (is_dir($file) || Text::endsWith($file, '.php'));
+            && (is_dir($file) || strpos($file, '.php') !== false);
     }
 
     public function lint($file, OutputInterface $output)
@@ -164,7 +162,7 @@ class LintCommand extends Command
 
     private function buildExcludePattern(InputInterface $input)
     {
-        $exclude = $input->getOption('exclude') ?: Arrays::fetch($this->config, 'exclude', []);
+        $exclude = $input->getOption('exclude') ?: ($this->config['exclude'] ?? []);
         if (!is_array($exclude)) {
             $exclude = [];
         }
