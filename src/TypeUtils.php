@@ -45,6 +45,9 @@ class TypeUtils
         if (!is_string($type)) {
             throw new \InvalidArgumentException('type should be string, got '.gettype($type));
         }
+        if (0 === strpos($type, '?')) {
+            $type = substr($type, 1);
+        }
         if ('array' === $type) {
             return ['isa' => 'array', 'valueType' => 'mixed'];
         }
