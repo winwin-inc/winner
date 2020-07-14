@@ -15,9 +15,11 @@
     "require": {
         "php": "^7.2",
         "ext-json": "*",
-        "symfony/console": "^5.0",
-        "nikic/php-parser": "^4.6",
+        "guzzlehttp/guzzle": "^7.0",
         "misterion/ko-process": "^0.5",
+        "monolog/monolog": "^2.1",
+        "nikic/php-parser": "^4.6",
+        "symfony/console": "^5.0",
         "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {

@@ -9,8 +9,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Yaml\Tag\TaggedValue;
-use Symfony\Component\Yaml\Yaml;
 
 class GenEnvCommand extends Command
 {
@@ -32,17 +30,11 @@ class GenEnvCommand extends Command
             $outFile = 'php://stdout';
         }
         $vars = $this->extractEnvVariables($project, $output);
-        $env = [];
-        foreach ($vars as $var) {
-            if ('vault' == $var['type']) {
-                $env[$var['name']] = new TaggedValue('password', '');
-            } else {
-                $env[$var['name']] = '';
-            }
-        }
-        file_put_contents($outFile, Yaml::dump($env));
+        file_put_contents($outFile, implode("\n", array_map(function ($var) {
+            return $var['name'].'=';
+        }, $vars)."\n"));
 
-        if ($output->isVerbose() && 'php://stdout' != $outFile) {
+        if ($output->isVerbose() && 'php://stdout' !== $outFile) {
             $output->writeln("<info>Save to $outFile</info>");
         }
     }

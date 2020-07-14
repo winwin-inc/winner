@@ -3,6 +3,7 @@
 
 use Symfony\Component\Console\Application;
 use winwin\winner\commands\CheckEnvCommand;
+use winwin\winner\commands\ConfigureCommand;
 use winwin\winner\commands\GenEnvCommand;
 use winwin\winner\commands\LintCommand;
 use winwin\winner\commands\DumpTokenCommand;
@@ -10,6 +11,10 @@ use winwin\winner\commands\EnumHelperCommand;
 use winwin\winner\commands\KeygenCommand;
 use winwin\winner\commands\EncryptCommand;
 use winwin\winner\commands\DecryptCommand;
+use winwin\winner\commands\TarsAddCommand;
+use winwin\winner\commands\TarsRequireCommand;
+use winwin\winner\commands\TarsUpdateCommand;
+use winwin\winner\commands\TarsUploadCommand;
 
 foreach (array(__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php') as $file) {
     if (file_exists($file)) {
@@ -36,4 +41,8 @@ $app->add(new DumpTokenCommand());
 $app->add(new EnumHelperCommand());
 $app->add(new CheckEnvCommand());
 $app->add(new GenEnvCommand());
+$app->add(new TarsAddCommand());
+$app->add(new TarsUpdateCommand());
+$app->add(new TarsRequireCommand());
+$app->add(new ConfigureCommand());
 $app->run();

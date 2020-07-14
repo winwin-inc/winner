@@ -171,7 +171,7 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
-    protected function functionNotFoundError(Node\Name $node)
+    protected function functionNotFoundError(Node\Name $node): void
     {
         $error = new FunctionNotFound($node);
         $error->setFile($this->file)
@@ -179,7 +179,7 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
-    protected function annotationError($message, $line)
+    protected function annotationError($message, $line): void
     {
         $error = new AnnotationError($message);
         $error->setFile($this->file)
@@ -187,7 +187,7 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
-    protected function checkClassExists(Node $name)
+    protected function checkClassExists(Node $name): void
     {
         if (!$name instanceof Node\Name) {
             return;
@@ -215,7 +215,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    protected function checkFunctionExists(Node $name)
+    protected function checkFunctionExists(Node $name): void
     {
         if (!$name instanceof Node\Name) {
             return;
@@ -241,7 +241,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    protected function checkAnnotations(Doc $doc = null)
+    protected function checkAnnotations(Doc $doc = null): void
     {
         if (null === $doc || !empty($this->context['class']['is_annotation'])) {
             return;
@@ -274,7 +274,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    protected function checkTypeClassNameExists($type, $attributes)
+    protected function checkTypeClassNameExists($type, $attributes): void
     {
         if (TypeUtils::isClass($type) && !TypeUtils::isSelf($type)) {
             $this->checkClassNameExists($type['class'], $attributes);
@@ -287,7 +287,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    protected function checkClassNameExists($name, $attributes)
+    protected function checkClassNameExists($name, $attributes): void
     {
         if ('\\' === $name[0]) {
             $node = new Node\Name\FullyQualified(explode('\\', $name), $attributes);
@@ -297,17 +297,17 @@ class Linter extends NodeVisitor
         $this->checkClassExists($node);
     }
 
-    public function enterNamespace(Node\Stmt\Namespace_ $node)
+    public function enterNamespace(Node\Stmt\Namespace_ $node): void
     {
         $this->resetContext((string) $node->name);
     }
 
-    public function leaveNamespace()
+    public function leaveNamespace(): void
     {
         $this->resetContext();
     }
 
-    public function enterUse(Node\Stmt\Use_ $node)
+    public function enterUse(Node\Stmt\Use_ $node): void
     {
         $type = $node->type;
         foreach ($node->uses as $use) {
@@ -320,7 +320,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    public function enterClass(Node\Stmt\Class_ $node)
+    public function enterClass(Node\Stmt\Class_ $node): void
     {
         if ($node->extends) {
             $this->checkClassExists($node->extends);
@@ -333,55 +333,53 @@ class Linter extends NodeVisitor
         $this->checkAnnotations($node->getDocComment());
     }
 
-    public function leaveClass()
+    public function leaveClass(): void
     {
         $this->context['class'] = [];
     }
 
-    public function enterMethod(Node\Stmt\ClassMethod $node)
+    public function enterMethod(Node\Stmt\ClassMethod $node): void
     {
         $this->checkAnnotations($node->getDocComment());
     }
 
-    public function enterMethodParam(Node\Param $node)
+    public function enterMethodParam(Node\Param $node): void
     {
         if ($node->type && $node->type instanceof Node\Name) {
             $this->checkClassExists($node->type);
         }
     }
 
-    public function enterProperty(Node\Stmt\Property $node)
+    public function enterProperty(Node\Stmt\Property $node): void
     {
         $this->checkAnnotations($node->getDocComment());
     }
 
-    public function enterNewClass(Node\Expr\New_ $node)
+    public function enterNewClass(Node\Expr\New_ $node): void
     {
         $this->checkClassExists($node->class);
     }
 
-    public function enterStaticClass(Node\Expr\StaticCall $node)
+    public function enterStaticClass(Node\Expr\StaticCall $node): void
     {
         $this->checkClassExists($node->class);
     }
 
-    public function enterInstanceof(Node\Expr\Instanceof_ $node)
+    public function enterInstanceof(Node\Expr\Instanceof_ $node): void
     {
         $this->checkClassExists($node->class);
     }
 
-    public function enterTryCatch(Node\Stmt\Catch_ $node)
+    public function enterTryCatch(Node\Stmt\Catch_ $node): void
     {
-        if (isset($node->type)) {
-            $this->checkClassExists($node->type);
-        } elseif (isset($node->types) && is_array($node->types)) {
+        if (isset($node->types) && is_array($node->types)) {
             foreach ($node->types as $type) {
                 $this->checkClassExists($type);
             }
         }
     }
 
-    public function enterFuncall(Node\Expr\FuncCall $node)
+    public function enterFunCall(Node\Expr\FuncCall $node): void
     {
         $name = $node->name;
         // not Node\Expr\Variable and not global function
@@ -390,7 +388,7 @@ class Linter extends NodeVisitor
         }
     }
 
-    public function enterClassConstFetch(Node\Expr\ClassConstFetch $node)
+    public function enterClassConstFetch(Node\Expr\ClassConstFetch $node): void
     {
         // maybe PhpParser\Node\Expr\Variable
         if ($node->class instanceof Node\Name) {
@@ -398,34 +396,31 @@ class Linter extends NodeVisitor
         }
     }
 
-    /**
-     * @return ReporterInterface
-     */
-    public function getReporter()
+    public function getReporter(): ReporterInterface
     {
         return $this->reporter;
     }
 
-    public function setReporter($reporter)
+    public function setReporter(ReporterInterface $reporter): Linter
     {
         $this->reporter = $reporter;
 
         return $this;
     }
 
-    public function getIgnoredClasses()
+    public function getIgnoredClasses(): array
     {
         return $this->ignoredClasses;
     }
 
-    public function setIgnoredClasses(array $ignoredClasses)
+    public function setIgnoredClasses(array $ignoredClasses): Linter
     {
         $this->ignoredClasses = $ignoredClasses;
 
         return $this;
     }
 
-    public function addIgnoredClasses(array $ignoredClasses)
+    public function addIgnoredClasses(array $ignoredClasses): Linter
     {
         $this->ignoredClasses = array_unique(array_merge($this->ignoredClasses, $ignoredClasses));
 

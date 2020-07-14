@@ -19,7 +19,7 @@ class LinterTest extends TestCase
     public function testOk($case)
     {
         $reporter = $this->lint('pass/'.$case);
-        print_r($reporter->getErrors());
+        // print_r($reporter->getErrors());
         $this->assertTrue(empty($reporter->getErrors()));
     }
 
