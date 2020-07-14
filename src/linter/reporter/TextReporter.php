@@ -1,8 +1,10 @@
 <?php
 
-namespace winwin\winner\reporter;
+declare(strict_types=1);
 
-use winwin\winner\error\ErrorInterface;
+namespace winwin\winner\linter\reporter;
+
+use winwin\winner\linter\error\ErrorInterface;
 
 class TextReporter implements ReporterInterface
 {
@@ -33,7 +35,7 @@ class TextReporter implements ReporterInterface
     private function getLineInfo($file, $line)
     {
         $info = $file ? ' in '.$file.' ' : ' ';
-        if ($line == -1) {
+        if (-1 == $line) {
             return $info.'on unknown line';
         } else {
             return $info.'on line '.$line;

@@ -31,17 +31,9 @@ unset($autoload);
 
 $app = new Application('winner', '@git-version@');
 
-$app->getHelperSet()->set(new \Deployer\Component\PharUpdate\Console\Helper());
-$selfUpdate = new \Deployer\Component\PharUpdate\Console\Command('self-update');
-$selfUpdate->setManifestUri("http://mirrors.winwin.group/winner/manifest.json");
-$app->add($selfUpdate);
-
 $app->add(new LintCommand());
 $app->add(new DumpTokenCommand());
 $app->add(new EnumHelperCommand());
 $app->add(new CheckEnvCommand());
 $app->add(new GenEnvCommand());
-$app->add(new KeygenCommand());
-$app->add(new EncryptCommand());
-$app->add(new DecryptCommand());
 $app->run();

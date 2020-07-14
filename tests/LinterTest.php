@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner;
 
 use PHPUnit\Framework\TestCase;
-use winwin\winner\reporter\TextReporter;
+use winwin\winner\linter\Linter;
+use winwin\winner\linter\reporter\TextReporter;
 
 /**
  * TestCase for PhpLint.
@@ -16,7 +19,7 @@ class LinterTest extends TestCase
     public function testOk($case)
     {
         $reporter = $this->lint('pass/'.$case);
-        // print_r($reporter->getErrors());
+        print_r($reporter->getErrors());
         $this->assertTrue(empty($reporter->getErrors()));
     }
 
@@ -32,6 +35,7 @@ class LinterTest extends TestCase
     public function passedScripts()
     {
         return [
+            ['const-modifier'],
             ['method-array-param'],
             ['try-catch'],
             ['new-self'],

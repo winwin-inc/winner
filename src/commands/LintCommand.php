@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner\commands;
 
 use Ko\ProcessManager;
@@ -9,8 +11,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use winwin\winner\Linter;
-use winwin\winner\reporter\TextReporter;
+use winwin\winner\linter\Linter;
+use winwin\winner\linter\reporter\TextReporter;
 
 class LintCommand extends Command
 {
@@ -91,7 +93,7 @@ class LintCommand extends Command
     {
         return !preg_match($this->excludePattern, $file)
             && is_readable($file)
-            && (is_dir($file) || strpos($file, '.php') !== false);
+            && (is_dir($file) || false !== strpos($file, '.php'));
     }
 
     public function lint($file, OutputInterface $output)
@@ -110,8 +112,7 @@ class LintCommand extends Command
     }
 
     /**
-     * @param OutputInterface $output
-     * @param string          $dir
+     * @param string $dir
      */
     protected function lintFilesInDir($dir, OutputInterface $output, $jobs)
     {
@@ -196,9 +197,6 @@ class LintCommand extends Command
         }
     }
 
-    /**
-     * @param InputInterface $input
-     */
     protected function addLoader(InputInterface $input)
     {
         $autoload = $input->getOption('autoload');

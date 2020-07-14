@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner\commands;
 
 use RuntimeException;
@@ -24,11 +26,11 @@ class EnumHelperCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = $input->getArgument('file');
-        if ($file === '-') {
+        if ('-' === $file) {
             $file = 'php://stdin';
         }
         $content = file_get_contents($file);
-        if ($content === false) {
+        if (false === $content) {
             throw new RuntimeException("Cannot read file '{$file}'");
         }
         $visitor = new EnumClassVisitor($file);
@@ -54,7 +56,7 @@ class EnumHelperCommand extends Command
         } elseif ($input->getOption('in-place')) {
             $outFile = $file;
         }
-        if (isset($outFile) && $outFile != 'php://stdin') {
+        if (isset($outFile) && 'php://stdin' != $outFile) {
             file_put_contents($outFile, $code);
             $output->writeln("<info>保存代码到 {$outFile}</info>");
         } else {

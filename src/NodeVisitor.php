@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner;
 
 use PhpParser\Node;
@@ -7,9 +9,9 @@ use PhpParser\NodeVisitorAbstract;
 
 class NodeVisitor extends NodeVisitorAbstract
 {
-    const ENTER = 'enter';
+    private const ENTER = 'enter';
 
-    const LEAVE = 'leave';
+    private const LEAVE = 'leave';
 
     /**
      * @var array key is NodeVisitor class name, value is [nodeClass => methods ]
@@ -74,13 +76,13 @@ class NodeVisitor extends NodeVisitorAbstract
         foreach ($class->getMethods() as $method) {
             $name = $method->getName();
             if (preg_match('/^(enter|leave)(.+)/', $name, $matches)) {
-                if ($matches[2] === 'Node') {
+                if ('Node' === $matches[2]) {
                     continue;
                 }
                 $params = $method->getParameters();
                 if (isset($params[0]) && $params[0]->getClass()) {
                     $nodeType = $params[0]->getClass()->getName();
-                    if ($matches[1] === 'enter') {
+                    if ('enter' === $matches[1]) {
                         $enterMethods[$nodeType][] = $name;
                     } else {
                         $leaveMethods[$nodeType][] = $name;
@@ -100,19 +102,19 @@ class NodeVisitor extends NodeVisitorAbstract
      */
     protected function getRules($node, $type)
     {
-        if (!in_array($type, [self::ENTER, self::LEAVE])) {
+        if (!in_array($type, [self::ENTER, self::LEAVE], true)) {
             throw new \InvalidArgumentException('type is invalid');
         }
         $class = is_object($node) ? get_class($node) : $node;
         if (!isset($this->cachedMethods[$type][$class])) {
-            $rules = $type == self::ENTER ? self::$enterMethods : self::$leaveMethods;
+            $rules = self::ENTER == $type ? self::$enterMethods : self::$leaveMethods;
             $matches = [];
             foreach ($rules[get_class($this)] as $nodeType => $methods) {
                 if (is_a($node, $nodeType)) {
-                    $matches = array_merge($matches, $methods);
+                    $matches[] = $methods;
                 }
             }
-            $this->cachedMethods[$type][$class] = $matches;
+            $this->cachedMethods[$type][$class] = empty($matches) ? [] : array_merge(...$matches);
         }
 
         return $this->cachedMethods[$type][$class];
@@ -123,7 +125,7 @@ class NodeVisitor extends NodeVisitorAbstract
         if (!isset($this->cachedMethods[$type][$nodeClass])) {
             $this->cachedMethods[$type][$nodeClass] = [];
         }
-        array_push($this->cachedMethods[$type][$nodeClass], $callback);
+        $this->cachedMethods[$type][$nodeClass][] = $callback;
 
         return $this;
     }

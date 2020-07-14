@@ -1,6 +1,8 @@
 <?php
 
-namespace winwin\winner;
+declare(strict_types=1);
+
+namespace winwin\winner\linter;
 
 use InvalidArgumentException;
 use PhpParser\Comment\Doc;
@@ -9,12 +11,14 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_ as UseStmt;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
-use winwin\winner\error\AnnotationError;
-use winwin\winner\error\ClassNotFound;
-use winwin\winner\error\FunctionNotFound;
-use winwin\winner\error\SyntaxError;
-use winwin\winner\error\UseConflict;
-use winwin\winner\reporter\ReporterInterface;
+use winwin\winner\linter\error\AnnotationError;
+use winwin\winner\linter\error\ClassNotFound;
+use winwin\winner\linter\error\FunctionNotFound;
+use winwin\winner\linter\error\SyntaxError;
+use winwin\winner\linter\error\UseConflict;
+use winwin\winner\linter\reporter\ReporterInterface;
+use winwin\winner\NodeVisitor;
+use winwin\winner\TypeUtils;
 
 /**
  * php lint.
@@ -103,8 +107,7 @@ class Linter extends NodeVisitor
     /**
      * Constructor.
      *
-     * @param string            $source   file name or code
-     * @param ReporterInterface $reporter
+     * @param string|resource $source file name or code
      */
     public function __construct($source, ReporterInterface $reporter)
     {
@@ -135,7 +138,7 @@ class Linter extends NodeVisitor
         return $this;
     }
 
-    protected function resetContext($namespace = '')
+    protected function resetContext($namespace = ''): void
     {
         $this->context = [
             'namespace' => $namespace,
@@ -144,7 +147,7 @@ class Linter extends NodeVisitor
         ];
     }
 
-    protected function syntaxError(Error $e)
+    protected function syntaxError(Error $e): void
     {
         $error = new SyntaxError($e);
         $error->setFile($this->file)
@@ -152,7 +155,7 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
-    protected function conflictUseStatementError(Node\Stmt\UseUse $node)
+    protected function conflictUseStatementError(Node\Stmt\UseUse $node): void
     {
         $error = new UseConflict($node);
         $error->setFile($this->file)
@@ -160,7 +163,7 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
-    protected function classNotFoundError(Node\Name $node)
+    protected function classNotFoundError(Node\Name $node): void
     {
         $error = new ClassNotFound($node);
         $error->setFile($this->file)
@@ -193,7 +196,7 @@ class Linter extends NodeVisitor
             $class = (string) $name;
         } else {
             $class = (string) $name;
-            if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this'])) {
+            if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this'], true)) {
                 return;
             }
             $alias = (string) $name->getFirst();
@@ -431,6 +434,6 @@ class Linter extends NodeVisitor
 
     public function isIgnoredClass($className)
     {
-        return in_array($className, $this->ignoredClasses);
+        return in_array($className, $this->ignoredClasses, true);
     }
 }

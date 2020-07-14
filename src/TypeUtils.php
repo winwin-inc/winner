@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner;
 
 class TypeUtils
 {
-    const CLASS_NAME_REGEX = '/^\\\\?([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+    private const CLASS_NAME_REGEX = '/^\\\\?([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
     private static $BUILTIN_TYPES = [
         'bool',
         'int',
@@ -28,16 +30,14 @@ class TypeUtils
      * checks whether the given type is a builtin type.
      *
      * @param string $value
-     *
-     * @return bool
      */
-    private static function isBuiltinType($value)
+    private static function isBuiltinType($value): bool
     {
-        return in_array($value, self::$BUILTIN_TYPES)
+        return in_array($value, self::$BUILTIN_TYPES, true)
             || isset(self::$BUILTIN_TYPES[$value]);
     }
 
-    public static function parse($type)
+    public static function parse($type): array
     {
         if (empty($type)) {
             throw new \InvalidArgumentException('type cannot be empty');
@@ -51,7 +51,7 @@ class TypeUtils
         if ('array' === $type) {
             return ['isa' => 'array', 'valueType' => 'mixed'];
         }
-        if (in_array($type, ['$this', 'self', 'static'])) {
+        if (in_array($type, ['$this', 'self', 'static'], true)) {
             return ['isa' => 'class', 'class' => $type, 'self' => true];
         }
         if (self::isBuiltinType($type)) {
@@ -75,22 +75,22 @@ class TypeUtils
         throw new \InvalidArgumentException("Invalid type declaration '{$type}'");
     }
 
-    public static function isClass($type)
+    public static function isClass($type): bool
     {
-        return isset($type['isa']) && 'class' == $type['isa'];
+        return isset($type['isa']) && 'class' === $type['isa'];
     }
 
-    public static function isArray($type)
+    public static function isArray($type): bool
     {
-        return isset($type['isa']) && 'array' == $type['isa'];
+        return isset($type['isa']) && 'array' === $type['isa'];
     }
 
-    public static function isComposite($type)
+    public static function isComposite($type): bool
     {
-        return isset($type['isa']) && 'composite' == $type['isa'];
+        return isset($type['isa']) && 'composite' === $type['isa'];
     }
 
-    public static function isSelf($type)
+    public static function isSelf($type): bool
     {
         return self::isClass($type) && !empty($type['self']);
     }

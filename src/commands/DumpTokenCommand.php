@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner\commands;
 
 use RuntimeException;
@@ -20,8 +22,8 @@ class DumpTokenCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = $input->getArgument('file');
-        $content = file_get_contents($file === '-' ? 'php://stdin' : $file);
-        if ($content === false) {
+        $content = file_get_contents('-' === $file ? 'php://stdin' : $file);
+        if (false === $content) {
             throw new RuntimeException("Cannot read file '{$file}'");
         }
         $tokens = token_get_all($content);

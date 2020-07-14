@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner\commands;
 
 use Defuse\Crypto\Core;
@@ -48,7 +50,7 @@ class CheckEnvCommand extends Command
 
         $errors = [];
         foreach ($this->extractEnvVariables($project, $output) as $var) {
-            if (in_array($var['name'], $ignoreList)) {
+            if (in_array($var['name'], $ignoreList, true)) {
                 continue;
             }
             if (!isset($env[$var['name']])) {
@@ -106,8 +108,6 @@ class CheckEnvCommand extends Command
 
     /**
      * @param string $envFile
-     *
-     * @return array
      */
     protected function loadDotenv($envFile): array
     {
@@ -127,6 +127,6 @@ class CheckEnvCommand extends Command
 
     private function looksLikeEncrypted(string $value)
     {
-        return strpos($value, bin2hex(Core::CURRENT_VERSION)) === 0;
+        return 0 === strpos($value, bin2hex(Core::CURRENT_VERSION));
     }
 }

@@ -13,18 +13,15 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.0",
+        "php": "^7.2",
         "ext-json": "*",
-        "symfony/console": "^3.0",
-        "nikic/php-parser": "^2.1",
-        "deployer/phar-update": "^2.0",
+        "symfony/console": "^5.0",
+        "nikic/php-parser": "^4.6",
         "misterion/ko-process": "^0.5",
-        "winwin/support": "^0.2",
-        "symfony/yaml": "^4.0",
-        "vlucas/phpdotenv": "^3.0"
+        "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {
-        "winwin/composer-phpcs-plugin": "^0.1",
+        "winwin/composer-phpcs-plugin": "^0.2",
         "phpunit/phpunit": "^6.0"
     },
     "autoload": {

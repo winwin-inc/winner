@@ -1,14 +1,14 @@
 <?php
 
-namespace winwin\winner\reporter;
+declare(strict_types=1);
 
-use winwin\winner\error\ErrorInterface;
+namespace winwin\winner\linter\reporter;
+
+use winwin\winner\linter\error\ErrorInterface;
 
 interface ReporterInterface
 {
     /**
-     * @param ErrorInterface $error
-     *
      * @return self
      */
     public function add(ErrorInterface $error);

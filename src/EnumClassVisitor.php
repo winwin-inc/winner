@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 
@@ -37,7 +38,7 @@ class EnumClassVisitor extends NodeVisitor
     /**
      * Constructor.
      *
-     * @param string $source file name or code
+     * @param string|resource $source file name or code
      */
     public function __construct($source)
     {
@@ -49,12 +50,12 @@ class EnumClassVisitor extends NodeVisitor
         }
     }
 
-    public function scan()
+    public function scan(): void
     {
         $code = $this->stream
             ? stream_get_contents($this->stream)
             : file_get_contents($this->file);
-        $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP5);
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
         $traverser = new NodeTraverser();
         $statements = $parser->parse($code);
         $traverser->addVisitor($this);
@@ -77,29 +78,24 @@ class EnumClassVisitor extends NodeVisitor
         return $this->properties;
     }
 
-    /**
-     * @return string
-     */
     public function getClassName(): string
     {
         return $this->className;
     }
 
-    public function enterClass(Node\Stmt\Class_ $node)
+    public function enterClass(Node\Stmt\Class_ $node): void
     {
-        $this->className = $node->name;
+        $this->className = $node->name->toString();
     }
 
-    public function enterConst(Node\Stmt\ClassConst $node)
+    public function enterConst(Node\Stmt\ClassConst $node): void
     {
-        // print_r($node->consts);
-        $this->values[] = $node->consts[0]->name;
+        $this->values[] = $node->consts[0]->name->toString();
     }
 
-    public function enterProperty(Node\Stmt\Property $node)
+    public function enterProperty(Node\Stmt\Property $node): void
     {
-        if ($node->type & Class_::MODIFIER_STATIC
-            && $node->props[0]->name == 'PROPERTIES') {
+        if ($node->isStatic() && 'PROPERTIES' === $node->props[0]->name->toString()) {
             foreach ($node->props[0]->default->items as $item) {
                 $this->properties[] = $item->key->value;
             }

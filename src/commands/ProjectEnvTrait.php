@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner\commands;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +25,7 @@ trait ProjectEnvTrait
             $tokens = new \ArrayIterator(token_get_all(file_get_contents($file)));
             while ($tokens->valid()) {
                 $token = $tokens->current();
-                if (is_array($token) && T_STRING == $token[0] && in_array($token[1], ['getenv', 'env', 'secret'])) {
+                if (is_array($token) && T_STRING == $token[0] && in_array($token[1], ['getenv', 'env', 'secret'], true)) {
                     $function = $token[1];
                     $tokens->next();
                     $tokens->next();
@@ -31,7 +33,7 @@ trait ProjectEnvTrait
                     if (is_array($token) && T_CONSTANT_ENCAPSED_STRING == $token[0]) {
                         $vars[] = [
                             'name' => trim($token[1], "'\""),
-                            'type' => in_array($function, ['secret']) ? 'vault' : 'plaintext',
+                            'type' => in_array($function, ['secret'], true) ? 'vault' : 'plaintext',
                             'file' => $relate_path,
                             'line' => $token[2],
                         ];
