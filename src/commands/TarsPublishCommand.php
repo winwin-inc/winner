@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
-class TarsAddCommand extends AbstractCommand
+use Symfony\Component\Console\Input\InputOption;
+
+class TarsPublishCommand extends AbstractCommand
 {
     protected function configure(): void
     {
         parent::configure();
-        $this->setName('tars:add');
+        $this->setName('tars:publish');
+        $this->addOption('revision', null, InputOption::VALUE_REQUIRED, "file revision");
         $this->setDescription('Add tars file to registry');
     }
 
@@ -24,7 +27,8 @@ class TarsAddCommand extends AbstractCommand
             throw new \InvalidArgumentException('There is no package name in composer.json');
         }
         $package = $composerJson['name'];
-        $revision = exec("git branch | grep '*' | awk '{print $2}'");
+        $revision = $this->input->getOption('revision')
+            ?? exec("git branch | grep '*' | awk '{print $2}'");
         $response = $this->getGatewayClient()->call($this->getTarsFileRegistryServant(), 'listFiles',
             $package, $revision);
         $existFiles = [];
