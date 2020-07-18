@@ -50,7 +50,12 @@ abstract class AbstractCommand extends Command
 
     protected function getTarsFileRegistryServant(): string
     {
-        return $this->getGatewayClient()->getConfig()->getTarsFileRegistryServantName();
+        $servantName = $this->getGatewayClient()->getConfig()->getTarsFileRegistryServantName();
+        if (!$servantName) {
+            throw new \InvalidArgumentException('tarsFileRegistryServantName 没有配置，请运行 configure 命令');
+        }
+
+        return $servantName;
     }
 
     protected function getGatewayClient(): JsonRpcGatewayClient

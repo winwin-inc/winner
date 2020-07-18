@@ -87,6 +87,9 @@ class JsonRpcGatewayClient implements LoggerAwareInterface
 
     public function call(string $servant, string $method, ...$params)
     {
+        if (empty($servant)) {
+            throw new \InvalidArgumentException('Servant is required');
+        }
         $this->getHttpClient()->request('POST', '/', [
             'json' => [
                 'method' => $servant.'.'.$method,
