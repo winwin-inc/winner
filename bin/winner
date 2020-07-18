@@ -16,7 +16,7 @@ use winwin\winner\commands\TarsRequireCommand;
 use winwin\winner\commands\TarsUpdateCommand;
 use winwin\winner\commands\TarsUploadCommand;
 
-foreach (array(__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php') as $file) {
+foreach (array(__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php') as $file) {
     if (file_exists($file)) {
         $autoload = $file;
         break;
