@@ -20,7 +20,18 @@ class LinterTest extends TestCase
     {
         $reporter = $this->lint('pass/'.$case);
         // print_r($reporter->getErrors());
+        if ($reporter->getErrors()) {
+            print_r([$case, $reporter->getErrors()]);
+        }
         $this->assertTrue(empty($reporter->getErrors()));
+    }
+
+    public function testSingle()
+    {
+        // $reporter = $this->lint("fail/annotation-class-value");
+        $reporter = $this->lint('fail/not-exist-const');
+        print_r([(string) $reporter, $reporter->getErrors()]);
+        $this->assertTrue(true);
     }
 
     /**
@@ -36,6 +47,7 @@ class LinterTest extends TestCase
     {
         return [
             ['const-modifier'],
+            ['class-const'],
             ['method-array-param'],
             ['try-catch'],
             ['new-self'],
@@ -48,6 +60,7 @@ class LinterTest extends TestCase
             ['use-function'],
             ['property-type'],
             ['class-annotation-imported'],
+            ['annotation-const'],
             ['method-parameter'],
             ['method-param'],
             ['method-return'],
@@ -74,6 +87,9 @@ class LinterTest extends TestCase
             ['class-funcall', 'The function Bar'],
             ['instanceof', 'The class Bar'],
             ['try-catch', 'The class Exception'],
+            ['annotation-const-not-found', 'The constant'],
+            ['annotation-value-class-not-found', 'The class Fo'],
+            ['not-exist-const', 'The constant'],
         ];
     }
 

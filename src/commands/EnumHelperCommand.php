@@ -37,7 +37,7 @@ class EnumHelperCommand extends Command
         $visitor->scan();
         $doc = [];
         foreach ($visitor->getValues() as $name) {
-            $doc[] = " * @method {$visitor->getClassName()} {$name}() : static";
+            $doc[] = " * @method static {$visitor->getClassName()} {$name}() : static";
         }
         if ($visitor->getProperties()) {
             $doc[] = ' *';
@@ -62,5 +62,7 @@ class EnumHelperCommand extends Command
         } else {
             echo $code;
         }
+
+        return 0;
     }
 }

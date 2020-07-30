@@ -32,10 +32,12 @@ class GenEnvCommand extends Command
         $vars = $this->extractEnvVariables($project, $output);
         file_put_contents($outFile, implode("\n", array_map(function ($var) {
             return $var['name'].'=';
-        }, $vars)."\n"));
+        }, $vars))."\n");
 
         if ($output->isVerbose() && 'php://stdout' !== $outFile) {
             $output->writeln("<info>Save to $outFile</info>");
         }
+
+        return 0;
     }
 }

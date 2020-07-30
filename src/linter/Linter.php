@@ -13,6 +13,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use winwin\winner\linter\error\AnnotationError;
 use winwin\winner\linter\error\ClassNotFound;
+use winwin\winner\linter\error\ConstantNotFound;
 use winwin\winner\linter\error\FunctionNotFound;
 use winwin\winner\linter\error\SyntaxError;
 use winwin\winner\linter\error\UseConflict;
@@ -120,7 +121,7 @@ class Linter extends NodeVisitor
         $this->setReporter($reporter);
     }
 
-    public function lint()
+    public function lint(): self
     {
         $code = $this->stream ? stream_get_contents($this->stream)
             : file_get_contents($this->file);
@@ -179,6 +180,14 @@ class Linter extends NodeVisitor
         $this->reporter->add($error);
     }
 
+    protected function constantNotFoundError(Node\Name $node, string $constantName): void
+    {
+        $error = new ConstantNotFound($node, $constantName);
+        $error->setFile($this->file)
+            ->setLine($node->getLine());
+        $this->reporter->add($error);
+    }
+
     protected function annotationError($message, $line): void
     {
         $error = new AnnotationError($message);
@@ -189,15 +198,24 @@ class Linter extends NodeVisitor
 
     protected function checkClassExists(Node $name): void
     {
+        $class = $this->getClassName($name);
+        if (isset($class) && !class_exists($class) && !interface_exists($class)
+            && !trait_exists($class) && !$this->isIgnoredClass($class)) {
+            $this->classNotFoundError($name);
+        }
+    }
+
+    protected function getClassName(Node $name): ?string
+    {
         if (!$name instanceof Node\Name) {
-            return;
+            return null;
         }
         if ($name->isFullyQualified()) {
             $class = (string) $name;
         } else {
             $class = (string) $name;
             if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this'], true)) {
-                return;
+                return null;
             }
             $alias = (string) $name->getFirst();
             if (isset($this->context['use'][UseStmt::TYPE_NORMAL][$alias])) {
@@ -209,10 +227,8 @@ class Linter extends NodeVisitor
                 $class = $this->context['namespace'].'\\'.$name;
             }
         }
-        if (!class_exists($class) && !interface_exists($class)
-            && !trait_exists($class) && !$this->isIgnoredClass($class)) {
-            $this->classNotFoundError($name);
-        }
+
+        return $class;
     }
 
     protected function checkFunctionExists(Node $name): void
@@ -247,7 +263,12 @@ class Linter extends NodeVisitor
             return;
         }
         $linenum = $doc->getLine();
-        foreach (explode("\n", $doc->getText()) as $line) {
+        $attributes = [];
+        $docBlock = $doc->getText();
+        $classConstRe = '/=\s*([\w\\\\]+)::(\w+)/';
+        $inAnnotation = false;
+
+        foreach (explode("\n", $docBlock) as $line) {
             if (preg_match('#\s*\*\s*\@([^ \(]+)#', $line, $matches)) {
                 $name = $matches[1];
                 if ('Annotation' === $name) {
@@ -264,11 +285,16 @@ class Linter extends NodeVisitor
                     } catch (InvalidArgumentException $e) {
                         $this->annotationError($e->getMessage(), $linenum);
                     }
-                } elseif (isset(self::$IGNORED_NAMES[$name])) {
-                    continue;
-                } else {
+                } elseif (!isset(self::$IGNORED_NAMES[$name])) {
+                    $inAnnotation = true;
                     $this->checkClassNameExists($name, $attributes);
+
+                    if (preg_match($classConstRe, $line, $matches)) {
+                        $this->checkConstantExists($matches[1], $matches[2], $attributes);
+                    }
                 }
+            } elseif ($inAnnotation && preg_match($classConstRe, $line, $matches)) {
+                $this->checkConstantExists($matches[1], $matches[2], $attributes);
             }
             ++$linenum;
         }
@@ -295,6 +321,28 @@ class Linter extends NodeVisitor
             $node = new Node\Name(explode('\\', $name), $attributes);
         }
         $this->checkClassExists($node);
+    }
+
+    protected function checkConstantExists($className, $constantName, array $attributes): void
+    {
+        if (is_string($className)) {
+            if ('\\' === $className[0]) {
+                $node = new Node\Name\FullyQualified(explode('\\', $className), $attributes);
+            } else {
+                $node = new Node\Name(explode('\\', $className), $attributes);
+            }
+            $className = $node;
+        }
+        if (in_array((string) $className, ['static', 'self'], true)) {
+            return;
+        }
+        $this->checkClassExists($className);
+        if ('class' !== $constantName) {
+            $class = $this->getClassName($className);
+            if (!defined($class.'::'.$constantName)) {
+                $this->constantNotFoundError($className, $constantName);
+            }
+        }
     }
 
     public function enterNamespace(Node\Stmt\Namespace_ $node): void
@@ -392,7 +440,7 @@ class Linter extends NodeVisitor
     {
         // maybe PhpParser\Node\Expr\Variable
         if ($node->class instanceof Node\Name) {
-            $this->checkClassExists($node->class);
+            $this->checkConstantExists($node->class, (string) $node->name, []);
         }
     }
 

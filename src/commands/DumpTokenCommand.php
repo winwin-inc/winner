@@ -35,5 +35,7 @@ class DumpTokenCommand extends Command
                 echo json_encode($token), "\n";
             }
         }
+
+        return 0;
     }
 }

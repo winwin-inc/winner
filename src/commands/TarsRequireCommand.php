@@ -81,7 +81,7 @@ class TarsRequireCommand extends AbstractCommand
             $tarsPackage->setFiles($fileNames);
         } else {
             $tarsPackage->setFiles(array_unique(array_filter(array_map(static function ($index) use ($fileNames) {
-                return $fileNames[$index] ?? null;
+                return $fileNames[$index - 1] ?? null;
             }, $select))));
         }
     }

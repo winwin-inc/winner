@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace winwin\winner\fixtures;
 
-class Bar
+class Foo
 {
-    public $value;
+    public const NAME = '1';
 }
