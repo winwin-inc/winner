@@ -57,8 +57,14 @@ class TypeUtils
         if (self::isBuiltinType($type)) {
             return ['isa' => 'primitive', 'type' => $type];
         }
-        if (preg_match('/^array<(.*)>$/', $type, $arrayTypes)
-            || preg_match('/^(.*)\[\]$/', $type, $arrayTypes)) {
+        if (preg_match('/^array<(.*)>$/', $type, $arrayTypes)) {
+            $valueType = trim(trim($arrayTypes[1]), '()');
+            if (preg_match("/^\S+\s*,\s*/", $valueType)) {
+                $valueType = explode(',', $valueType, 2)[1];
+            }
+
+            return ['isa' => 'array', 'valueType' => self::parse($valueType)];
+        } elseif (preg_match('/^(.*)\[\]$/', $type, $arrayTypes)) {
             return ['isa' => 'array', 'valueType' => self::parse(trim($arrayTypes[1], '()'))];
         }
         if (preg_match(self::CLASS_NAME_REGEX, $type)) {
