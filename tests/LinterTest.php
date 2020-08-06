@@ -43,13 +43,6 @@ class LinterTest extends TestCase
         $this->assertStringStartsWith('Fatal error: '.$error, $report);
     }
 
-    public function testName()
-    {
-        $reporter = $this->lint('pass/property-array-type');
-        print_r($reporter->getErrors());
-        $this->assertTrue(empty($reporter->getErrors()));
-    }
-
     public function passedScripts()
     {
         return [

@@ -265,7 +265,7 @@ class Linter extends NodeVisitor
         $linenum = $doc->getLine();
         $attributes = [];
         $docBlock = $doc->getText();
-        $classConstRe = '/=\s*([\w\\\\]+)::(\w+)/';
+        $classConstRe = '/\s*([\w\\\\]+)::(\w+)/';
         $inAnnotation = false;
 
         foreach (explode("\n", $docBlock) as $line) {
@@ -279,7 +279,9 @@ class Linter extends NodeVisitor
                     'startLine' => $linenum,
                     'annotation' => $line,
                 ];
-                if (preg_match('#\s*\*\s*\@(var|param|return|throws)\s*(\S+)#', $line, $matches)) {
+                if (preg_match('#\s*\*\s*\@template\s*(\S+)#', $line, $matches)) {
+                    $this->context['template'][$matches[1]] = true;
+                } elseif (preg_match('#\s*\*\s*\@(var|param|return|throws)\s*(\S+)#', $line, $matches)) {
                     try {
                         $this->checkTypeClassNameExists(TypeUtils::parse($matches[2]), $attributes);
                     } catch (InvalidArgumentException $e) {
@@ -303,7 +305,11 @@ class Linter extends NodeVisitor
     protected function checkTypeClassNameExists($type, $attributes): void
     {
         if (TypeUtils::isClass($type) && !TypeUtils::isSelf($type)) {
-            $this->checkClassNameExists($type['class'], $attributes);
+            $name = $type['class'];
+            if (!empty($this->context['template'][$name])) {
+                return;
+            }
+            $this->checkClassNameExists($name, $attributes);
         } elseif (TypeUtils::isArray($type)) {
             $this->checkTypeClassNameExists($type['valueType'], $attributes);
         } elseif (TypeUtils::isComposite($type)) {

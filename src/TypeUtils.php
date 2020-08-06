@@ -6,7 +6,7 @@ namespace winwin\winner;
 
 class TypeUtils
 {
-    private const CLASS_NAME_REGEX = '/^\\\\?([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+    private const CLASS_NAME_REGEX = '/^(\\\\?(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)(<.*?>)?$/';
     private static $BUILTIN_TYPES = [
         'bool',
         'int',
@@ -67,8 +67,8 @@ class TypeUtils
         } elseif (preg_match('/^(.*)\[\]$/', $type, $arrayTypes)) {
             return ['isa' => 'array', 'valueType' => self::parse(trim($arrayTypes[1], '()'))];
         }
-        if (preg_match(self::CLASS_NAME_REGEX, $type)) {
-            return ['isa' => 'class', 'class' => $type];
+        if (preg_match(self::CLASS_NAME_REGEX, $type, $matches)) {
+            return ['isa' => 'class', 'class' => $matches[1], 'template' => $matches[2] ?? null];
         }
         if (false !== strpos($type, '|')) {
             $types = [];
