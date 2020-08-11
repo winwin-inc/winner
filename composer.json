@@ -20,7 +20,8 @@
         "monolog/monolog": "^2.1",
         "nikic/php-parser": "^4.6",
         "symfony/console": "^5.0",
-        "vlucas/phpdotenv": "^5.0"
+        "vlucas/phpdotenv": "^5.0",
+        "composer/semver": "^1.4"
     },
     "require-dev": {
         "winwin/composer-phpcs-plugin": "^0.2",

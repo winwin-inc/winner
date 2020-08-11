@@ -16,7 +16,7 @@ use winwin\winner\TarsPackage;
 
 abstract class AbstractCommand extends Command
 {
-    private const CONFIG_FILE = 'tars/config.json';
+    private const CONFIG_FILE = TarsPackage::TARS_FILE_PATH.'/config.json';
 
     /**
      * @var InputInterface
@@ -108,7 +108,10 @@ abstract class AbstractCommand extends Command
             'files' => $tarsPackage->getFiles(),
             'path' => $tarsPackage->getPathPrefix(),
         ]);
-        file_put_contents(self::CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        file_put_contents(
+            self::CONFIG_FILE,
+            json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        );
     }
 
     abstract protected function handle(): void;

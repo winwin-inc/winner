@@ -85,8 +85,9 @@ class JsonRpcGatewayClient implements LoggerAwareInterface
         return $this->httpClient;
     }
 
-    public function call(string $servant, string $method, ...$params)
+    public function call(array $call, ...$params)
     {
+        list($servant, $method) = $call;
         if (empty($servant)) {
             throw new \InvalidArgumentException('Servant is required');
         }

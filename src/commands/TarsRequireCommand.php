@@ -15,15 +15,21 @@ class TarsRequireCommand extends AbstractCommand
     {
         parent::configure();
         $this->setName('tars:require');
-        $this->setDescription('Add tars file to registry');
-        $this->addOption('revision', null, InputOption::VALUE_REQUIRED, 'branch name of the package', 'master');
-        $this->addArgument('package', InputArgument::REQUIRED, 'package to require');
+        $this->setDescription('下载 Tars 定义文件');
+        $this->addOption('revision', null, InputOption::VALUE_REQUIRED, '包分支名或版本号', 'master');
+        $this->addOption('path', null, InputOption::VALUE_REQUIRED, '本地安装路径');
+        $this->addArgument('package', InputArgument::REQUIRED, '包名');
     }
 
     protected function handle(): void
     {
         $package = $this->input->getArgument('package');
         $revision = $this->input->getOption('revision');
+        $path = $this->input->getOption('path');
+
+        if (is_dir(TarsPackage::TARS_FILE_PATH.'/servant') && empty($path)) {
+            $path = 'client';
+        }
         $packages = $this->loadTarsPackages();
         $tarsPackage = $packages[$package] ?? new TarsPackage($package, $revision, []);
         $files = $this->getPackageFiles($package, $revision);
@@ -31,7 +37,7 @@ class TarsRequireCommand extends AbstractCommand
             return;
         }
         $this->chooseFiles($tarsPackage, array_column($files, 'fileName'));
-        $this->setPathPrefix($tarsPackage, $packages);
+        $this->setPathPrefix($tarsPackage, $packages, $path);
         $this->saveTarsPackage($tarsPackage);
         foreach ($tarsPackage->update($this->getGatewayClient()) as $file) {
             $this->output->writeln("<info>更新Tars定义文件 $file</info>");
@@ -39,12 +45,22 @@ class TarsRequireCommand extends AbstractCommand
         $this->output->writeln("<info>添加{$tarsPackage->getName()}:{$tarsPackage->getRevision()} Tars定义文件</info>");
     }
 
+    /**
+     * 获取包 tars 定义文件列表.
+     *
+     * @return string[]
+     */
     private function getPackageFiles(string $package, string $revision): array
     {
-        $files = $this->getGatewayClient()->call($this->getTarsFileRegistryServant(), 'listFiles',
-            $package, $revision);
+        $files = $this->getGatewayClient()->call(
+            [$this->getTarsFileRegistryServant(), 'listFiles'],
+            $package, $revision
+        );
         if (empty($files)) {
-            $revisions = $this->getGatewayClient()->call($this->getTarsFileRegistryServant(), 'listRevisions', $package);
+            $revisions = $this->getGatewayClient()->call(
+                [$this->getTarsFileRegistryServant(), 'listRevisions'],
+                $package
+            );
             if (empty($revisions)) {
                 $this->output->writeln("<error>$package 没有Tars定义文件</error>");
             } else {
@@ -56,6 +72,11 @@ class TarsRequireCommand extends AbstractCommand
         return $files;
     }
 
+    /**
+     * 交互询问需要引入的 tars 定义文件.
+     *
+     * @param string[] $fileNames
+     */
     private function chooseFiles(TarsPackage $tarsPackage, array $fileNames): void
     {
         if ($tarsPackage->getFiles() == $fileNames) {
@@ -86,33 +107,32 @@ class TarsRequireCommand extends AbstractCommand
         }
     }
 
-    private function setPathPrefix(TarsPackage $tarsPackage, array $packages): void
+    /**
+     * @param TarsPackage[] $packages
+     */
+    private function setPathPrefix(TarsPackage $package, array $packages, ?string $prefix): void
     {
-        if ($tarsPackage->getPathPrefix()) {
-            return;
+        if (!empty($prefix) && empty($package->getPathPrefix())) {
+            $package->setPathPrefix($prefix);
         }
         foreach ($packages as $otherPackage) {
-            if ($otherPackage->getName() === $tarsPackage->getName()) {
+            if ($otherPackage->getName() === $package->getName()) {
                 continue;
             }
-            if (!empty($otherPackage->getPathPrefix())) {
-                if ($otherPackage->getPathPrefix() === $tarsPackage->getPathPrefix()) {
-                    throw new \InvalidArgumentException(sprintf('%s 和 %s 目录不能相同', $otherPackage->getPathPrefix(), $tarsPackage->getPathPrefix()));
-                }
-                continue;
-            }
-            $commonFiles = array_values(array_intersect($otherPackage->getFiles(), $tarsPackage->getFiles()));
+            $commonFiles = array_values(array_intersect($otherPackage->getFullNames(), $package->getFullNames()));
             if (!$commonFiles) {
                 continue;
             }
-            $defaultPath = basename($tarsPackage->getName());
+
+            $defaultPath = (empty($package->getPathPrefix()) ? $package->getPathPrefix().'/' : '')
+                .basename($package->getName());
             $question = new Question(
                 sprintf('%s 和 %s 冲突，请指定文件目录（默认 %s）：',
                     $commonFiles[0], $otherPackage->getName(), $defaultPath),
                 $defaultPath
             );
             $answer = $this->getHelper('question')->ask($this->input, $this->output, $question);
-            $tarsPackage->setPathPrefix($answer);
+            $package->setPathPrefix($answer);
 
             return;
         }

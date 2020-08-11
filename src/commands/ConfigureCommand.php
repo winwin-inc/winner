@@ -27,11 +27,11 @@ class ConfigureCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
         $config->setEndpoint($helper->ask($input, $output,
-            $this->createQuestion('Gateway URL', $config->getEndpoint() ?: 'http://jsonrpc.cuntutu.com')));
+            $this->createQuestion('网关地址', $config->getEndpoint() ?: 'http://jsonrpc.cuntutu.com')));
         $config->setToken($helper->ask($input, $output,
             $this->createQuestion('API KEY', $config->getToken())));
         $config->setTarsFileRegistryServantName($helper->ask($input, $output,
-            $this->createQuestion('Tars File Registry Servant', $config->getTarsFileRegistryServantName() ?: 'WinwinRpc.TarsFileRegistryServer.TarsFileRegistryObj')));
+            $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'WinwinRpc.TarsFileRegistryServer.TarsFileRegistryObj')));
         Config::save($config, $input->getOption('config'));
 
         return 0;
@@ -40,7 +40,7 @@ class ConfigureCommand extends Command
     protected function createQuestion(string $prompt, $default = null, bool $required = true): Question
     {
         if (!empty($default)) {
-            $prompt .= " (default $default)";
+            $prompt .= " ($default)";
         }
         $question = new Question($prompt.': ', $default);
         if ($required) {
