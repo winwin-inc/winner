@@ -27,7 +27,14 @@ class TarsRequireCommand extends AbstractCommand
         $revision = $this->input->getOption('revision');
         $path = $this->input->getOption('path');
 
-        if (is_dir(TarsPackage::TARS_FILE_PATH.'/servant') && empty($path)) {
+        if (!is_dir(TarsPackage::TARS_FILE_PATH)
+            && !mkdir(TarsPackage::TARS_FILE_PATH)
+            && !is_dir(TarsPackage::TARS_FILE_PATH)) {
+            throw new \InvalidArgumentException('Cannot create directory '.TarsPackage::TARS_FILE_PATH);
+        }
+        if (empty($path)
+            && (is_dir(TarsPackage::TARS_FILE_PATH.'/servant')
+                || is_dir(TarsPackage::TARS_FILE_PATH.'/client'))) {
             $path = 'client';
         }
         $packages = $this->loadTarsPackages();

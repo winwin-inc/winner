@@ -214,7 +214,7 @@ class Linter extends NodeVisitor
             $class = (string) $name;
         } else {
             $class = (string) $name;
-            if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this'], true)) {
+            if (in_array($class, ['self', 'static', 'parent', 'string', 'bool', 'int', '$this', 'iterable'], true)) {
                 return null;
             }
             $alias = (string) $name->getFirst();
