@@ -39,12 +39,14 @@ class EnumHelperCommand extends Command
         foreach ($visitor->getValues() as $name) {
             $doc[] = " * @method static {$visitor->getClassName()} {$name}() : static";
         }
+        $doc[] = ' *';
         if ($visitor->getProperties()) {
-            $doc[] = ' *';
             foreach ($visitor->getProperties() as $property) {
                 $doc[] = " * @property string \${$property}";
             }
         }
+        $doc[] = ' * @property string $name';
+        $doc[] = ' * @property '.$visitor->getValueType().' $value';
         $doc = implode("\n", $doc)."\n */\nclass ";
         if (preg_match("#\*\\/\s*\nclass #ms", $content)) {
             $code = preg_replace("#( \* @method.*?)?\*\\/\s*\nclass #ms", $doc, $content);

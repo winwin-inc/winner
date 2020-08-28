@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace winwin\winner;
 
 use PHPUnit\Framework\TestCase;
@@ -13,6 +15,7 @@ class EnumClassVisitorTest extends TestCase
 
         $this->assertEquals(['MALE', 'FEMALE', 'UNKNOWN'], $visitor->getValues());
         $this->assertEquals(['description', 'intval'], $visitor->getProperties());
-        $this->assertEquals("Gender", $visitor->getClassName());
+        $this->assertEquals('Gender', $visitor->getClassName());
+        $this->assertEquals('string', $visitor->getValueType());
     }
 }

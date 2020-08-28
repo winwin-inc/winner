@@ -19,7 +19,7 @@ class GenEnvCommand extends Command
         $this->setName('gen-env')
             ->setDescription('生成 env 文件')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output file')
-            ->addArgument('project', InputArgument::REQUIRED, 'Project directory');
+            ->addArgument('project', InputArgument::OPTIONAL, 'Project directory', '.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -30,9 +30,16 @@ class GenEnvCommand extends Command
             $outFile = 'php://stdout';
         }
         $vars = $this->extractEnvVariables($project, $output);
-        file_put_contents($outFile, implode("\n", array_map(function ($var) {
-            return $var['name'].'=';
-        }, $vars))."\n");
+        $seen = [];
+        $lines = [];
+        foreach ($vars as $var) {
+            if (isset($seen[$var['name']])) {
+                continue;
+            }
+            $seen[$var['name']] = true;
+            $lines[] = $var['name'].'=';
+        }
+        file_put_contents($outFile, implode("\n", $lines)."\n");
 
         if ($output->isVerbose() && 'php://stdout' !== $outFile) {
             $output->writeln("<info>Save to $outFile</info>");

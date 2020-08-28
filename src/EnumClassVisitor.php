@@ -31,6 +31,11 @@ class EnumClassVisitor extends NodeVisitor
     private $values = [];
 
     /**
+     * @var string
+     */
+    private $valueType;
+
+    /**
      * @var string[]
      */
     private $properties = [];
@@ -70,6 +75,11 @@ class EnumClassVisitor extends NodeVisitor
         return $this->values;
     }
 
+    public function getValueType(): string
+    {
+        return $this->valueType ?? 'mixed';
+    }
+
     /**
      * @return string[]
      */
@@ -86,11 +96,17 @@ class EnumClassVisitor extends NodeVisitor
     public function enterClass(Node\Stmt\Class_ $node): void
     {
         $this->className = $node->name->toString();
+        if (!$node->extends || 'Enum' !== ((string) $node->extends)) {
+            throw new \InvalidArgumentException("class {$this->className} not extends Enum");
+        }
     }
 
     public function enterConst(Node\Stmt\ClassConst $node): void
     {
         $this->values[] = $node->consts[0]->name->toString();
+        if (!isset($this->valueType) && isset($node->consts[0]->value->value)) {
+            $this->valueType = gettype($node->consts[0]->value->value);
+        }
     }
 
     public function enterProperty(Node\Stmt\Property $node): void
