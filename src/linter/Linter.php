@@ -73,6 +73,8 @@ class Linter extends NodeVisitor
         'package_version' => true,
         // PlantUML
         'startuml' => true, 'enduml' => true,
+        // PHPStan
+        'implements' => true,
     ];
 
     /**
