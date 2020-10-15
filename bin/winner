@@ -4,6 +4,7 @@
 use Symfony\Component\Console\Application;
 use winwin\winner\commands\CheckEnvCommand;
 use winwin\winner\commands\ConfigureCommand;
+use winwin\winner\commands\ExtractErrorsCommand;
 use winwin\winner\commands\GenEnvCommand;
 use winwin\winner\commands\LintCommand;
 use winwin\winner\commands\DumpTokenCommand;
@@ -47,4 +48,5 @@ $app->add(new TarsUpdateCommand());
 $app->add(new TarsRequireCommand());
 $app->add(new TarsOutdatedCommand());
 $app->add(new ConfigureCommand());
+$app->add(new ExtractErrorsCommand());
 $app->run();

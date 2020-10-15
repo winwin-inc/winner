@@ -15,13 +15,14 @@
     "require": {
         "php": "^7.2",
         "ext-json": "*",
+        "composer/semver": "^1.4",
         "guzzlehttp/guzzle": "^7.0",
+        "laminas/laminas-code": "^3.4",
         "misterion/ko-process": "^0.5",
         "monolog/monolog": "^2.1",
         "nikic/php-parser": "^4.6",
         "symfony/console": "^5.0",
-        "vlucas/phpdotenv": "^5.0",
-        "composer/semver": "^1.4"
+        "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {
         "winwin/composer-phpcs-plugin": "^0.2",
