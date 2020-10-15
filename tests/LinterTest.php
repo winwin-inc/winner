@@ -29,7 +29,7 @@ class LinterTest extends TestCase
     public function testSingle()
     {
         // $reporter = $this->lint("fail/annotation-class-value");
-        $reporter = $this->lint('fail/not-exist-const');
+        $reporter = $this->lint('fail/annotation-value-class-not-found2');
         print_r([(string) $reporter, $reporter->getErrors()]);
         $this->assertTrue(true);
     }

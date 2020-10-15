@@ -293,12 +293,16 @@ class Linter extends NodeVisitor
                     $inAnnotation = true;
                     $this->checkClassNameExists($name, $attributes);
 
-                    if (preg_match($classConstRe, $line, $matches)) {
-                        $this->checkConstantExists($matches[1], $matches[2], $attributes);
+                    if (preg_match_all($classConstRe, $line, $matches)) {
+                        foreach ($matches[1] as $i => $const) {
+                            $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                        }
                     }
                 }
-            } elseif ($inAnnotation && preg_match($classConstRe, $line, $matches)) {
-                $this->checkConstantExists($matches[1], $matches[2], $attributes);
+            } elseif ($inAnnotation && preg_match_all($classConstRe, $line, $matches)) {
+                foreach ($matches[1] as $i => $const) {
+                    $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                }
             }
             ++$linenum;
         }

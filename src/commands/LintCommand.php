@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
+use Composer\Autoload\ClassLoader;
 use Ko\ProcessManager;
 use Ko\SharedMemory;
 use Symfony\Component\Console\Command\Command;
@@ -48,8 +49,7 @@ class LintCommand extends Command
             ->addArgument('dir', InputArgument::OPTIONAL, 'php code directory')
             ->addOption('php-version', 'p', InputOption::VALUE_REQUIRED, 'php version', '7.0')
             ->addOption('jobs', '-j', InputOption::VALUE_REQUIRED, 'Allow N jobs at once')
-            ->addOption('exclude', '-e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'directory to exclude')
-            ->addOption('autoload', '-l', InputOption::VALUE_REQUIRED, 'autoload file');
+            ->addOption('exclude', '-e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'directory to exclude');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -199,18 +199,11 @@ class LintCommand extends Command
 
     protected function addLoader(InputInterface $input)
     {
-        $autoload = $input->getOption('autoload');
-        if ($autoload) {
-            if (file_exists($autoload)) {
-                include_once $autoload;
-            } else {
-                throw new \RuntimeException("autoload file '$autoload' does not exist");
-            }
-        } elseif (file_exists($file = realpath('vendor/autoload.php'))) {
-            include_once $file;
-        }
-        if (!empty($this->config['autoload'])) {
-            include_once $this->config['autoload'];
+        if (file_exists($file = realpath('vendor/autoload.php'))) {
+            /** @var ClassLoader $loader */
+            $loader = require $file;
+            $loader->unregister();
+            $loader->register(false);
         }
     }
 
