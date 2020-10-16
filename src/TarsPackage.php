@@ -111,6 +111,28 @@ class TarsPackage
         return $updatedFiles;
     }
 
+    public function getServants(string $serverName): array
+    {
+        $pathPrefix = self::TARS_FILE_PATH.'/'.($this->getPathPrefix() ? $this->getPathPrefix().'/' : '');
+        if (!is_dir($pathPrefix) && !mkdir($pathPrefix) && !is_dir($pathPrefix)) {
+            throw new \RuntimeException("无法创建目录 $pathPrefix");
+        }
+        $servants = [];
+        foreach ($this->getFiles() as $file) {
+            $fileName = $pathPrefix.$file;
+            $content = file_get_contents($fileName);
+            if (preg_match('/module\s+(\w+)/ms', $content, $matches)) {
+                $module = $matches[1];
+                preg_match_all('/\binterface\s+(\w+)/ms', $content, $matches);
+                foreach ($matches[1] as $name) {
+                    $servants[$module.'.'.$name] = $serverName.'.'.$name.'Obj';
+                }
+            }
+        }
+
+        return $servants;
+    }
+
     public function getUpdatedFiles(JsonRpcGatewayClient $client, string $revision): array
     {
         $files = $client->call(
@@ -130,5 +152,14 @@ class TarsPackage
         }
 
         return $updatedFiles;
+    }
+
+    public function removeFiles(): void
+    {
+        $pathPrefix = self::TARS_FILE_PATH.'/'.($this->getPathPrefix() ? $this->getPathPrefix().'/' : '');
+        foreach ($this->getFiles() as $file) {
+            $fileName = $pathPrefix.$file;
+            @unlink($fileName);
+        }
     }
 }

@@ -45,10 +45,10 @@ class TarsRequireCommand extends AbstractCommand
         }
         $this->chooseFiles($tarsPackage, array_column($files, 'fileName'));
         $this->setPathPrefix($tarsPackage, $packages, $path);
-        $this->saveTarsPackage($tarsPackage);
         foreach ($tarsPackage->update($this->getGatewayClient()) as $file) {
             $this->output->writeln("<info>更新Tars定义文件 $file</info>");
         }
+        $this->saveTarsPackage($tarsPackage);
         $this->output->writeln("<info>添加{$tarsPackage->getName()}:{$tarsPackage->getRevision()} Tars定义文件</info>");
     }
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Question\Question;
 use winwin\winner\TarsPackage;
 
 class TarsPublishCommand extends AbstractCommand
@@ -28,6 +30,14 @@ class TarsPublishCommand extends AbstractCommand
             throw new \InvalidArgumentException('There is no package name in composer.json');
         }
         $package = $composerJson['name'];
+        $serverName = $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'getServerName'], $package);
+        if (empty($serverName)) {
+            /** @var QuestionHelper $question */
+            $question = $this->getHelper('question');
+            $serverName = $question->ask($this->input, $this->output, new Question("What is server name for $package: "));
+            $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'setServerName'], $package, $serverName);
+        }
+
         $revision = $this->input->getOption('revision')
             ?? exec("git branch | grep '*' | awk '{print $2}'");
         $response = $this->getGatewayClient()->call(
@@ -41,9 +51,11 @@ class TarsPublishCommand extends AbstractCommand
 
         foreach (glob($projectPath.'/'.TarsPackage::TARS_FILE_PATH.'/servant/*.tars') as $tarsFile) {
             $fileName = basename($tarsFile);
-            if (isset($existFiles[$fileName])) {
+            $existFile = $existFiles[$fileName] ?? null;
+            if (isset($existFile)) {
+                unset($existFiles[$fileName]);
                 $md5 = md5_file($tarsFile);
-                if ($existFiles[$fileName]['md5'] === $md5) {
+                if ($existFile['md5'] === $md5) {
                     $this->output->writeln("<info>$fileName 未修改</info>");
                     continue;
                 }
@@ -58,6 +70,12 @@ class TarsPublishCommand extends AbstractCommand
                 ]
             );
             $this->output->writeln("<info>成功上传 {$fileName}，版本号 $version</info>");
+        }
+        foreach (array_keys($existFiles) as $fileName) {
+            $this->getGatewayClient()->call(
+                [$this->getTarsFileRegistryServant(), 'deleteFile'],
+                $package, $revision, $fileName
+            );
         }
         $this->output->writeln("<info>成功上传 $package:$revision Tars定义文件</info>");
     }

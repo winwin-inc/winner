@@ -97,21 +97,75 @@ abstract class AbstractCommand extends Command
         return $packages;
     }
 
+    protected function removeTarsPackage(string $package): bool
+    {
+        $packages = $this->loadTarsPackages();
+        if (isset($packages[$package])) {
+            $packages[$package]->removeFiles();
+            $config = json_decode(file_get_contents(self::CONFIG_FILE), true);
+            unset($config['packages'][$package]);
+            $serverName = $this->getGatewayClient()->call(
+                [$this->getTarsFileRegistryServant(), 'getServerName'], $package
+            );
+            if (!empty($serverName) && isset($config['client']['servants'])) {
+                foreach ($config['client']['servants'] as $id => $servant) {
+                    if (0 === strpos($servant, $serverName.'.')) {
+                        unset($config['client']['servants'][$id]);
+                    }
+                }
+            }
+            file_put_contents(
+                self::CONFIG_FILE,
+                json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
     protected function saveTarsPackage(TarsPackage $tarsPackage): void
     {
         $config = [];
         if (file_exists(self::CONFIG_FILE)) {
             $config = json_decode(file_get_contents(self::CONFIG_FILE), true);
         }
+        if (isset($config['packages'][$tarsPackage->getName()])) {
+            $tarsPackage->setFiles(array_values(array_unique(array_merge(
+                $tarsPackage->getFiles(), $config['packages'][$tarsPackage->getName()]['files'] ?? []
+            ))));
+        }
         $config['packages'][$tarsPackage->getName()] = array_filter([
             'revision' => $tarsPackage->getRevision(),
             'files' => $tarsPackage->getFiles(),
             'path' => $tarsPackage->getPathPrefix(),
         ]);
+        $this->updateServants($config, $tarsPackage);
         file_put_contents(
             self::CONFIG_FILE,
             json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    private function updateServants(array &$config, TarsPackage $tarsPackage): void
+    {
+        $serverName = $this->getGatewayClient()->call(
+            [$this->getTarsFileRegistryServant(), 'getServerName'], $tarsPackage->getName()
+        );
+        if (empty($serverName)) {
+            return;
+        }
+        $servants = $config['client']['servants'] ?? [];
+        foreach ($tarsPackage->getServants($serverName) as $id => $servant) {
+            [$module, $name] = explode('.', $id);
+            if (!isset($servants[$name]) || $servants[$name] === $servant) {
+                $servants[$name] = $servant;
+            } else {
+                $servants[$id] = $servant;
+            }
+        }
+        $config['client']['servants'] = $servants;
     }
 
     abstract protected function handle(): void;
