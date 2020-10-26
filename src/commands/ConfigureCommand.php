@@ -31,7 +31,7 @@ class ConfigureCommand extends Command
         $config->setToken($helper->ask($input, $output,
             $this->createQuestion('API KEY', $config->getToken())));
         $config->setTarsFileRegistryServantName($helper->ask($input, $output,
-            $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'WinwinRpc.TarsFileRegistryServer.TarsFileRegistryObj')));
+            $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'winwin.tars_file_registry.TarsFileRegistryObj')));
         Config::save($config, $input->getOption('config'));
 
         return 0;

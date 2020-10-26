@@ -48,7 +48,7 @@ class TarsRequireCommand extends AbstractCommand
         foreach ($tarsPackage->update($this->getGatewayClient()) as $file) {
             $this->output->writeln("<info>更新Tars定义文件 $file</info>");
         }
-        $this->saveTarsPackage($tarsPackage);
+        $this->saveTarsPackage($tarsPackage, $path);
         $this->output->writeln("<info>添加{$tarsPackage->getName()}:{$tarsPackage->getRevision()} Tars定义文件</info>");
     }
 

@@ -125,7 +125,7 @@ abstract class AbstractCommand extends Command
         return false;
     }
 
-    protected function saveTarsPackage(TarsPackage $tarsPackage): void
+    protected function saveTarsPackage(TarsPackage $tarsPackage, string $path): void
     {
         $config = [];
         if (file_exists(self::CONFIG_FILE)) {
@@ -141,7 +141,15 @@ abstract class AbstractCommand extends Command
             'files' => $tarsPackage->getFiles(),
             'path' => $tarsPackage->getPathPrefix(),
         ]);
-        $this->updateServants($config, $tarsPackage);
+        if (!isset($config['client'])) {
+            $config['client'] = [];
+        }
+        if (!isset($config['client'][0])) {
+            if (!isset($config['client']['tars_path'])) {
+                $config['client']['tars_path'] = $path;
+            }
+            $this->updateServants($config, $tarsPackage);
+        }
         file_put_contents(
             self::CONFIG_FILE,
             json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
