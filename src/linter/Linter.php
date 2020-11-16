@@ -267,7 +267,7 @@ class Linter extends NodeVisitor
         $linenum = $doc->getLine();
         $attributes = [];
         $docBlock = $doc->getText();
-        $classConstRe = '/\s*([\w\\\\]+)::(\w+)/';
+        $classConstRe = '/\s*([\w\\\\]+)::(\w+)\s*\(?/';
         $inAnnotation = false;
 
         foreach (explode("\n", $docBlock) as $line) {
@@ -295,13 +295,17 @@ class Linter extends NodeVisitor
 
                     if (preg_match_all($classConstRe, $line, $matches)) {
                         foreach ($matches[1] as $i => $const) {
-                            $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                            if ('(' !== $matches[0][$i][-1]) {
+                                $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                            }
                         }
                     }
                 }
             } elseif ($inAnnotation && preg_match_all($classConstRe, $line, $matches)) {
                 foreach ($matches[1] as $i => $const) {
-                    $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                    if ('(' !== $matches[0][$i][-1]) {
+                        $this->checkConstantExists($matches[1][$i], $matches[2][$i], $attributes);
+                    }
                 }
             }
             ++$linenum;
