@@ -289,7 +289,7 @@ class Linter extends NodeVisitor
                     } catch (InvalidArgumentException $e) {
                         $this->annotationError($e->getMessage(), $linenum);
                     }
-                } elseif (!isset(self::$IGNORED_NAMES[$name])) {
+                } elseif (!$this->isIgnoredAnnotation($name)) {
                     $inAnnotation = true;
                     $this->checkClassNameExists($name, $attributes);
 
@@ -494,5 +494,11 @@ class Linter extends NodeVisitor
     public function isIgnoredClass($className)
     {
         return in_array($className, $this->ignoredClasses, true);
+    }
+
+    private function isIgnoredAnnotation($name)
+    {
+        return isset(self::$IGNORED_NAMES[$name])
+            || preg_match("/\w+-(param|var|return)$/", $name);
     }
 }

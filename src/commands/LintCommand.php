@@ -199,7 +199,8 @@ class LintCommand extends Command
 
     protected function addLoader(InputInterface $input)
     {
-        if (file_exists($file = realpath('vendor/autoload.php'))) {
+        $file = realpath('vendor/autoload.php');
+        if ($file && file_exists($file)) {
             /** @var ClassLoader $loader */
             $loader = require $file;
             $loader->unregister();
