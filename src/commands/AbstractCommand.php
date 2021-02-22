@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use winwin\winner\Config;
 use winwin\winner\JsonRpcGatewayClient;
 use winwin\winner\TarsPackage;
@@ -29,6 +30,11 @@ abstract class AbstractCommand extends Command
     protected $output;
 
     /**
+     * @var SymfonyStyle
+     */
+    protected $io;
+
+    /**
      * @var JsonRpcGatewayClient
      */
     private $gatewayClient;
@@ -43,6 +49,7 @@ abstract class AbstractCommand extends Command
     {
         $this->input = $input;
         $this->output = $output;
+        $this->io = new SymfonyStyle($input, $output);
         $this->handle();
 
         return 0;
@@ -145,7 +152,7 @@ abstract class AbstractCommand extends Command
             $config['client'] = [];
         }
         if (!isset($config['client'][0])) {
-            if (!isset($config['client']['tars_path'])) {
+            if (!isset($config['client']['tars_path']) && 'client' !== $path) {
                 $config['client']['tars_path'] = $path;
             }
             $this->updateServants($config, $tarsPackage);

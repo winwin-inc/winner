@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\Question;
 use winwin\winner\TarsPackage;
 
 class TarsPublishCommand extends AbstractCommand
@@ -23,7 +21,7 @@ class TarsPublishCommand extends AbstractCommand
     {
         $projectPath = getcwd();
         if (!file_exists($projectPath.'/composer.json')) {
-            $this->output->writeln('<error>composer.json not found in current directory</error>');
+            $this->io->error('composer.json not found in current directory');
         }
         $composerJson = json_decode(file_get_contents($projectPath.'/composer.json'), true);
         if (!isset($composerJson['name'])) {
@@ -32,9 +30,7 @@ class TarsPublishCommand extends AbstractCommand
         $package = $composerJson['name'];
         $serverName = $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'getServerName'], $package);
         if (empty($serverName)) {
-            /** @var QuestionHelper $question */
-            $question = $this->getHelper('question');
-            $serverName = $question->ask($this->input, $this->output, new Question("What is server name for $package: "));
+            $serverName = $this->io->ask("What is server name for $package: ");
             $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'setServerName'], $package, $serverName);
         }
 
@@ -69,7 +65,7 @@ class TarsPublishCommand extends AbstractCommand
                     'content' => file_get_contents($tarsFile),
                 ]
             );
-            $this->output->writeln("<info>成功上传 {$fileName}，版本号 $version</info>");
+            $this->io->note("成功上传 {$fileName}，版本号 $version");
         }
         foreach (array_keys($existFiles) as $fileName) {
             $this->getGatewayClient()->call(
@@ -77,6 +73,6 @@ class TarsPublishCommand extends AbstractCommand
                 $package, $revision, $fileName
             );
         }
-        $this->output->writeln("<info>成功上传 $package:$revision Tars定义文件</info>");
+        $this->io->success("成功上传 $package:$revision Tars定义文件");
     }
 }
