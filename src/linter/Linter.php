@@ -283,7 +283,7 @@ class Linter extends NodeVisitor
                 ];
                 if (preg_match('#\s*\*\s*\@template\s*(\S+)#', $line, $matches)) {
                     $this->context['template'][$matches[1]] = true;
-                } elseif (preg_match('#\s*\*\s*\@(var|param|return|throws)\s*(\S+)#', $line, $matches)) {
+                } elseif (preg_match('#\s*\*\s*\@(phpstan-[\w-]+|var|param|return|throws)\s*(\S+)#', $line, $matches)) {
                     try {
                         $this->checkTypeClassNameExists(TypeUtils::parse($matches[2]), $attributes);
                     } catch (InvalidArgumentException $e) {

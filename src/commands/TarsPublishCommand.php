@@ -47,6 +47,9 @@ class TarsPublishCommand extends AbstractCommand
 
         foreach (glob($projectPath.'/'.TarsPackage::TARS_FILE_PATH.'/servant/*.tars') as $tarsFile) {
             $fileName = basename($tarsFile);
+            if ('EventBusSubscriber.tars' === $fileName) {
+                continue;
+            }
             $existFile = $existFiles[$fileName] ?? null;
             if (isset($existFile)) {
                 unset($existFiles[$fileName]);

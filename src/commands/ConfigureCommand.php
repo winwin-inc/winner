@@ -18,6 +18,9 @@ class ConfigureCommand extends Command
     {
         $this->setName('configure')
             ->setDescription('Configures gateway');
+        $this->addOption('endpoint', null, InputOption::VALUE_REQUIRED);
+        $this->addOption('api-key', null, InputOption::VALUE_REQUIRED);
+        $this->addOption('registry', null, InputOption::VALUE_REQUIRED);
         $this->addOption('config', null, InputOption::VALUE_REQUIRED, 'config file path');
     }
 
@@ -26,12 +29,24 @@ class ConfigureCommand extends Command
         $config = Config::getInstance();
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
-        $config->setEndpoint($helper->ask($input, $output,
-            $this->createQuestion('网关地址', $config->getEndpoint() ?: 'http://jsonrpc.cuntutu.com')));
-        $config->setToken($helper->ask($input, $output,
-            $this->createQuestion('API KEY', $config->getToken())));
-        $config->setTarsFileRegistryServantName($helper->ask($input, $output,
-            $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'winwin.tars_file_registry.TarsFileRegistryObj')));
+        if ($input->getOption('endpoint')) {
+            $config->setEndpoint($input->getOption('endpoint'));
+        } else {
+            $config->setEndpoint($helper->ask($input, $output,
+                $this->createQuestion('网关地址', $config->getEndpoint() ?: 'http://jsonrpc.cuntutu.com')));
+        }
+        if ($input->getOption('api-key')) {
+            $config->setToken($input->getOption('api-key'));
+        } else {
+            $config->setToken($helper->ask($input, $output,
+                $this->createQuestion('API KEY', $config->getToken())));
+        }
+        if ($input->getOption('registry')) {
+            $config->setTarsFileRegistryServantName($input->getOption('registry'));
+        } else {
+            $config->setTarsFileRegistryServantName($helper->ask($input, $output,
+                $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'winwin.tars_file_registry.TarsFileRegistryObj')));
+        }
         Config::save($config, $input->getOption('config'));
 
         return 0;
