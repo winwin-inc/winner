@@ -13,6 +13,7 @@ class TarsPublishCommand extends AbstractCommand
     {
         parent::configure();
         $this->setName('tars:publish');
+        $this->addOption('server', null, InputOption::VALUE_REQUIRED, '服务名');
         $this->addOption('revision', null, InputOption::VALUE_REQUIRED, '文件版本号');
         $this->setDescription('发布 tars 定义文件');
     }
@@ -28,9 +29,15 @@ class TarsPublishCommand extends AbstractCommand
             throw new \InvalidArgumentException('There is no package name in composer.json');
         }
         $package = $composerJson['name'];
-        $serverName = $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'getServerName'], $package);
+        $serverName = $this->input->getOption('server');
         if (empty($serverName)) {
-            $serverName = $this->io->ask("What is server name for $package: ");
+            $serverName = $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'getServerName'], $package);
+            if (empty($serverName)) {
+                $serverName = $this->io->ask("What is server name for $package: ");
+            }
+        }
+
+        if (!empty($serverName)) {
             $this->getGatewayClient()->call([$this->getTarsFileRegistryServant(), 'setServerName'], $package, $serverName);
         }
 

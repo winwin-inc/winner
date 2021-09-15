@@ -13,7 +13,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.2",
+        "php": ">=7.2.5",
         "ext-json": "*",
         "composer/semver": "^1.4",
         "guzzlehttp/guzzle": "^7.0",
