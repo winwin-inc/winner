@@ -76,15 +76,21 @@ class KuiperUpgradeCommand extends Command
 
     private function fixRequirement(FixConfigPhpVisitor $config, array $deps): array
     {
-        unset($deps['kuiper/kuiper']);
-        unset($deps['wenbinye/tars']);
+        unset($deps['kuiper/kuiper'], $deps['wenbinye/tars']);
         if (isset($deps['winwin/support'])) {
             $deps['winwin/support'] = '^0.5';
         } else {
             $deps['kuiper/tars'] = '^0.6';
         }
-        if (isset($deps['winwin/job-queue'])) {
-            $deps['winwin/job-queue'] = '^0.5';
+        foreach ([
+                     'winwin/job-queue' => '^0.5',
+                     'winwin/ddd' => '^0.2',
+                     'winwin/admin-support' => '^0.2',
+                     'winwin/file-system' => '^0.3',
+                 ] as $pkg => $version) {
+            if (isset($deps[$pkg])) {
+                $deps[$pkg] = $version;
+            }
         }
         if ($config->hasConfig('application.database')) {
             $deps['kuiper/db'] = '^0.6';
