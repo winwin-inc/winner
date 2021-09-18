@@ -36,8 +36,6 @@ class FixIndexPhpVisitor extends NodeVisitorAbstract
         if ($node instanceof Node\Stmt\UseUse) {
             if ('wenbinye\\tars\\server\\ServerApplication' === $node->name->toString()) {
                 $node->name = new Node\Name('kuiper\\tars\\TarsApplication', $node->name->getAttributes());
-
-                return $node;
             }
         } elseif ($node instanceof Node\Expr\StaticCall && 'ServerApplication' === $node->class->toString()) {
             $node->class = new Node\Name('TarsApplication', $node->class->getAttributes());

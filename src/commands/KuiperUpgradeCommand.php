@@ -9,7 +9,9 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Finder\Finder;
 use winwin\winner\kuiper\FixConfigPhpVisitor;
+use winwin\winner\kuiper\FixEntityVisitor;
 use winwin\winner\kuiper\FixIndexPhpVisitor;
 
 class KuiperUpgradeCommand extends Command
@@ -31,6 +33,7 @@ class KuiperUpgradeCommand extends Command
         }
 
         $this->updateIndexPhp();
+        $this->fixEntityDateTime();
         $config = $this->updateConfig();
         $this->updateComposerJson($config);
         passthru('composer container');
@@ -77,6 +80,9 @@ class KuiperUpgradeCommand extends Command
     private function fixRequirement(FixConfigPhpVisitor $config, array $deps): array
     {
         unset($deps['kuiper/kuiper'], $deps['wenbinye/tars']);
+        if (isset($deps['php'])) {
+            $deps['php'] = '>=7.2.5';
+        }
         if (isset($deps['winwin/support'])) {
             $deps['winwin/support'] = '^0.5';
         } else {
@@ -123,5 +129,20 @@ class KuiperUpgradeCommand extends Command
         $meta['whitelist'] = ['kuiper/*', 'winwin/*'];
 
         return $meta;
+    }
+
+    private function fixEntityDateTime(): void
+    {
+        foreach (Finder::create()
+            ->in(['src/domain', 'src/application/model'])
+            ->name('*.php')
+            ->files() as $entityFile) {
+            $entityFile = $entityFile->getRealPath();
+            echo $entityFile, "\n";
+            $visitor = FixEntityVisitor::fix($entityFile);
+            if ($visitor->isFixed()) {
+                file_put_contents($entityFile, $visitor->getCode());
+            }
+        }
     }
 }
