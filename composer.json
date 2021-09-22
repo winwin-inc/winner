@@ -17,6 +17,7 @@
         "ext-json": "*",
         "composer/semver": "^1.4",
         "guzzlehttp/guzzle": "^7.0",
+        "kuiper/tars": "^0.6",
         "laminas/laminas-code": "^3.4",
         "misterion/ko-process": "^0.5",
         "monolog/monolog": "^2.1",
@@ -25,8 +26,9 @@
         "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {
-        "winwin/composer-phpcs-plugin": "^0.2",
-        "phpunit/phpunit": "^6.0"
+        "kuiper/component-installer": "^0.1.4",
+        "phpunit/phpunit": "^6.0",
+        "winwin/composer-phpcs-plugin": "^0.2"
     },
     "autoload": {
         "psr-4": {
@@ -38,7 +40,19 @@
             "winwin\\winner\\": "tests/"
         }
     },
+    "scripts": {
+        "container-config": "kuiper\\component\\ComponentInstaller::generate"
+    },
     "bin": [
         "bin/winner"
-    ]
+    ],
+    "extra": {
+        "kuiper": {
+            "config-file": "src/container.php",
+            "whitelist": [
+                "kuiper/*"
+            ],
+            "component-scan": ["winwin\\winner\\integration"]
+        }
+    }
 }

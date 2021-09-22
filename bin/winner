@@ -3,6 +3,7 @@
 
 use Symfony\Component\Console\Application;
 use winwin\winner\commands\CheckEnvCommand;
+use winwin\winner\commands\CreateEnvCommand;
 use winwin\winner\commands\ConfigureCommand;
 use winwin\winner\commands\ExtractErrorsCommand;
 use winwin\winner\commands\GenEnvCommand;
@@ -53,4 +54,5 @@ $app->add(new TarsOutdatedCommand());
 $app->add(new ConfigureCommand());
 $app->add(new ExtractErrorsCommand());
 $app->add(new KuiperUpgradeCommand());
+$app->add(new CreateEnvCommand());
 $app->run();
