@@ -134,7 +134,7 @@ class KuiperUpgradeCommand extends Command
     private function fixEntityDateTime(): void
     {
         foreach (Finder::create()
-            ->in(['src/domain', 'src/application/model'])
+            ->in(array_filter(['src/domain', 'src/application/model'], 'is_dir'))
             ->name('*.php')
             ->files() as $entityFile) {
             $entityFile = $entityFile->getRealPath();
