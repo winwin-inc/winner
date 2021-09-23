@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
+use kuiper\di\ContainerBuilder;
 use kuiper\swoole\Application;
+use kuiper\tars\client\TarsProxyFactory;
 use kuiper\tars\integration\ConfigServant;
 use kuiper\tars\server\ServerProperties;
 use Symfony\Component\Console\Command\Command;
@@ -29,8 +31,21 @@ class CreateEnvCommand extends Command
     {
         [$app, $server] = explode('.', $input->getArgument('server'));
         [$host, $port] = explode(':', $input->getOption('registry') ?? '127.0.0.1:17890');
-        $_SERVER['argv'] = array_merge(['--define', 'php_config_file=winner.php'], $_SERVER['argv']);
-        $application = Application::create();
+        $_SERVER['argv'] = array_merge(['--define', 'php_config_file='], $_SERVER['argv']);
+        $application = Application::create(function () use ($host, $port) {
+            $builder = new ContainerBuilder();
+            $config = require __DIR__.'/../container.php';
+            foreach ($config['configuration'] as $configurationClass) {
+                $builder->addConfiguration(new $configurationClass());
+            }
+            $builder->addDefinitions([
+                KmsServant::class => function (TarsProxyFactory $factory) {
+                    return $factory->create(KmsServant::class);
+                },
+            ]);
+
+            return $builder->build();
+        });
         Application::getInstance()->getConfig()->merge([
             'application' => [
                 'tars' => [
