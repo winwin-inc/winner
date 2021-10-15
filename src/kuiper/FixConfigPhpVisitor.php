@@ -68,7 +68,7 @@ class FixConfigPhpVisitor extends NodeVisitorAbstract
             if ('winwin\\support\\secret' === $node->name->toString()) {
                 $this->secretImported = true;
             }
-        } elseif ($node instanceof Node\Stmt\Return_) {
+        } elseif ($node instanceof Node\Stmt\Return_ && $node->expr instanceof Node\Expr\Array_) {
             $this->config = $node->expr;
             $web = $this->getNode('application.web');
             if (null !== $web) {
@@ -105,9 +105,10 @@ class FixConfigPhpVisitor extends NodeVisitorAbstract
             $node->setAttribute('comments', [new Comment('')]);
         }
         if ($node instanceof Node\Expr\FuncCall
-            && 'env' === $node->name->toString()
             && isset($node->args[1])
-            && !($node->args[1]->value instanceof Node\Scalar\String_)) {
+            && !($node->args[1]->value instanceof Node\Scalar\String_)
+            && $node->name instanceof Node\Name
+            && 'env' === $node->name->toString()) {
             if ($node->args[1]->value instanceof Node\Scalar\LNumber || $node->args[1]->value instanceof Node\Scalar\DNumber) {
                 $node->args[1]->value = new Node\Scalar\String_((string) $node->args[1]->value->value);
             } else {

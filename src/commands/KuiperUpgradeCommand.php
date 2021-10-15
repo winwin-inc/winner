@@ -13,6 +13,7 @@ use Symfony\Component\Finder\Finder;
 use winwin\winner\kuiper\FixConfigPhpVisitor;
 use winwin\winner\kuiper\FixEntityVisitor;
 use winwin\winner\kuiper\FixIndexPhpVisitor;
+use winwin\winner\kuiper\FixWebFilterNamespace;
 
 class KuiperUpgradeCommand extends Command
 {
@@ -36,6 +37,7 @@ class KuiperUpgradeCommand extends Command
         $this->fixEntityDateTime();
         $config = $this->updateConfig();
         $this->updateComposerJson($config);
+        $this->fixWebFilterNamespace();
         passthru('composer container');
         passthru('composer update');
         system('rm -f .tars-gen.cache');
@@ -133,8 +135,12 @@ class KuiperUpgradeCommand extends Command
 
     private function fixEntityDateTime(): void
     {
+        $dirs = array_filter(['src/domain', 'src/application/model'], 'is_dir');
+        if (empty($dirs)) {
+            return;
+        }
         foreach (Finder::create()
-            ->in(array_filter(['src/domain', 'src/application/model'], 'is_dir'))
+            ->in($dirs)
             ->name('*.php')
             ->files() as $entityFile) {
             $entityFile = $entityFile->getRealPath();
@@ -142,6 +148,20 @@ class KuiperUpgradeCommand extends Command
             $visitor = FixEntityVisitor::fix($entityFile);
             if ($visitor->isFixed()) {
                 file_put_contents($entityFile, $visitor->getCode());
+            }
+        }
+    }
+
+    private function fixWebFilterNamespace(): void
+    {
+        if (is_dir('src/application')) {
+            foreach (Finder::create()
+            ->in('src/application')
+            ->name('*.php')
+            ->files() as $file) {
+                if (false !== strpos(file_get_contents($file), 'kuiper\\web\\annotation\\filter')) {
+                    file_put_contents(FixWebFilterNamespace::fix($file), $file);
+                }
             }
         }
     }
