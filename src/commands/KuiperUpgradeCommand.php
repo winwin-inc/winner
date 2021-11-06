@@ -159,7 +159,7 @@ class KuiperUpgradeCommand extends Command
             ->in('src/application')
             ->name('*.php')
             ->files() as $file) {
-                if (false !== strpos(file_get_contents($file), 'kuiper\\web\\annotation\\filter')) {
+                if (false !== strpos(file_get_contents((string) $file), 'kuiper\\web\\annotation\\filter')) {
                     file_put_contents(FixWebFilterNamespace::fix($file), $file);
                 }
             }
