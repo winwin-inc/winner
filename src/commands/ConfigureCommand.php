@@ -45,7 +45,7 @@ class ConfigureCommand extends Command
             $config->setTarsFileRegistryServantName($input->getOption('registry'));
         } else {
             $config->setTarsFileRegistryServantName($helper->ask($input, $output,
-                $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'winwin.tars_file_registry.TarsFileRegistryObj')));
+                $this->createQuestion('Tars文件管理服务名', $config->getTarsFileRegistryServantName() ?: 'winwin.tarsfileregistry.TarsFileRegistryObj')));
         }
         Config::save($config, $input->getOption('config'));
 

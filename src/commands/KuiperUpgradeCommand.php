@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace winwin\winner\commands;
 
+use kuiper\helper\Text;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -56,7 +57,12 @@ class KuiperUpgradeCommand extends Command
         $composerJson['require'] = $this->fixRequirement($config, $composerJson['require'] ?? []);
         $composerJson['require-dev'] = $this->fixRequirementDev($composerJson['require-dev'] ?? []);
         $composerJson['extra']['kuiper'] = $this->fixKuiperConfig($config, $composerJson['extra']['kuiper']);
-        $composerJson['scripts']['package'] = 'kuiper\\tars\\server\\PackageBuilder::run';
+        unset($composerJson['extra']['tars'], $composerJson['scripts']['package']);
+        foreach ($composerJson['scripts'] as $name => $value) {
+            if (Text::startsWith($value, './vendor/bin/')) {
+                $composerJson['scripts'][$name] = '@php -d memory_limit=-1 '.$value;
+            }
+        }
         file_put_contents(
             'composer.json',
             json_encode($composerJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL
@@ -82,15 +88,13 @@ class KuiperUpgradeCommand extends Command
     private function fixRequirement(FixConfigPhpVisitor $config, array $deps): array
     {
         unset($deps['kuiper/kuiper'], $deps['wenbinye/tars']);
-        if (isset($deps['php'])) {
-            $deps['php'] = '>=7.2.5';
-        }
         if (isset($deps['winwin/support'])) {
-            $deps['winwin/support'] = '^0.5';
+            $deps['winwin/support'] = '^0.6';
         } else {
             $deps['kuiper/tars'] = '^0.6';
         }
         foreach ([
+                     'php' => '>=7.2',
                      'winwin/job-queue' => '^0.5',
                      'winwin/ddd' => '^0.2',
                      'winwin/admin-support' => '^0.2',
@@ -114,6 +118,15 @@ class KuiperUpgradeCommand extends Command
     {
         if (isset($deps['wenbinye/tars-gen'])) {
             $deps['wenbinye/tars-gen'] = '^0.4';
+        }
+
+        foreach ([
+                     'wenbinye/tars-gen' => '^0.4',
+                     'roave/security-advisories' => 'dev-latest',
+                 ] as $pkg => $version) {
+            if (isset($deps[$pkg])) {
+                $deps[$pkg] = $version;
+            }
         }
 
         return $deps;
@@ -140,9 +153,9 @@ class KuiperUpgradeCommand extends Command
             return;
         }
         foreach (Finder::create()
-            ->in($dirs)
-            ->name('*.php')
-            ->files() as $entityFile) {
+                     ->in($dirs)
+                     ->name('*.php')
+                     ->files() as $entityFile) {
             $entityFile = $entityFile->getRealPath();
             echo $entityFile, "\n";
             $visitor = FixEntityVisitor::fix($entityFile);
@@ -156,9 +169,9 @@ class KuiperUpgradeCommand extends Command
     {
         if (is_dir('src/application')) {
             foreach (Finder::create()
-            ->in('src/application')
-            ->name('*.php')
-            ->files() as $file) {
+                         ->in('src/application')
+                         ->name('*.php')
+                         ->files() as $file) {
                 if (false !== strpos(file_get_contents((string) $file), 'kuiper\\web\\annotation\\filter')) {
                     file_put_contents(FixWebFilterNamespace::fix($file), $file);
                 }

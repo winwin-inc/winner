@@ -119,6 +119,9 @@ return [
                 'param' => json_decode(env('TRACING_SAMPLER_PARAM', 'true'), true),
             ],
         ],
+        'server' => [
+            'enable-hook' => 'true' === env('APP_SERVER_ENABLE_HOOK'),
+        ],
     ],
 ];
 

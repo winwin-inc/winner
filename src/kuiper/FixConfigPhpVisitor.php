@@ -97,6 +97,36 @@ class FixConfigPhpVisitor extends NodeVisitorAbstract
             if (null !== $http) {
                 $this->fixHttpClient($http);
             }
+            $serverHook = $this->getNode('application.server.enable-hook');
+            if (null !== $serverHook) {
+                $serverArr = $this->getNode('application.server');
+                if (null !== $serverArr && 1 === count($serverArr->value->items)) {
+                    $this->removeNode('application.server');
+                } else {
+                    $this->removeNode('application.server.enable-hook');
+                }
+            }
+            $kmsEnabled = $this->getNode('application.kms.enabled');
+            if (null === $kmsEnabled && $this->hasSecret) {
+                $this->config->items[0]->value->items[] = new Node\Expr\ArrayItem(
+                    new Node\Expr\Array_(
+                        [
+                            new Node\Expr\ArrayItem(
+                                new Node\Expr\BinaryOp\Identical(
+                                    new Node\Scalar\String_('true'),
+                                    new Node\Expr\FuncCall(
+                                        new Node\Name('env'),
+                                        [new Node\Arg(new Node\Scalar\String_('KMS_ENABLED'))]
+                                    )
+                                ),
+                                new Node\Scalar\String_('enabled')
+                            ),
+                        ],
+                        ['kind' => Node\Expr\Array_::KIND_SHORT]
+                    ),
+                    new Node\Scalar\String_('kms')
+                );
+            }
             $node->expr = $this->config;
 
             return $node;
@@ -131,6 +161,39 @@ class FixConfigPhpVisitor extends NodeVisitorAbstract
         $parts = explode('.', $name);
 
         return $this->getNodeRecursive($this->config, $parts);
+    }
+
+    private function removeNode(string $name): void
+    {
+        $parts = explode('.', $name);
+
+        $this->removeNodeRecursive($this->config, $parts);
+    }
+
+    private function removeNodeRecursive(Node\Expr\Array_ $array, array $path): void
+    {
+        $name = array_shift($path);
+        if (empty($path)) {
+            $items = [];
+            /** @var Node\Expr\ArrayItem $arrayItem */
+            foreach ($array->items as $arrayItem) {
+                if (!($arrayItem->key instanceof Node\Scalar\String_ && $arrayItem->key->value === $name)) {
+                    $items[] = $arrayItem;
+                }
+            }
+            $array->items = $items;
+        } else {
+            /** @var Node\Expr\ArrayItem $arrayItem */
+            foreach ($array->items as $arrayItem) {
+                if ($arrayItem->key instanceof Node\Scalar\String_
+                    && $arrayItem->key->value === $name
+                    && $arrayItem->value instanceof Node\Expr\Array_) {
+                    $this->removeNodeRecursive($arrayItem->value, $path);
+
+                    return;
+                }
+            }
+        }
     }
 
     public function hasConfig(string $name): bool

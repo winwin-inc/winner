@@ -119,6 +119,9 @@ return [
                 'param' => json_decode(env('TRACING_SAMPLER_PARAM', 'true'), true),
             ],
         ],
+        'kms' => [
+            'enabled' => 'true' === env('KMS_ENABLED'),
+        ],
     ],
 ];
 // Local Variables:
