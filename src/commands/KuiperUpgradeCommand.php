@@ -97,8 +97,9 @@ class KuiperUpgradeCommand extends Command
                      'php' => '>=7.2',
                      'winwin/job-queue' => '^0.5',
                      'winwin/ddd' => '^0.2',
-                     'winwin/admin-support' => '^0.2',
-                     'winwin/file-system' => '^0.3',
+                     'winwin/admin-support' => '^0.3',
+                     'winwin/file-system' => '^0.4',
+            'winwin/zhidou-support' => '^0.3',
                  ] as $pkg => $version) {
             if (isset($deps[$pkg])) {
                 $deps[$pkg] = $version;
@@ -122,6 +123,8 @@ class KuiperUpgradeCommand extends Command
 
         foreach ([
                      'wenbinye/tars-gen' => '^0.4',
+                     'phpstan/phpstan' => '^1.0',
+                     'phpstan/phpstan-strict-rules' => '^1.0',
                      'roave/security-advisories' => 'dev-latest',
                  ] as $pkg => $version) {
             if (isset($deps[$pkg])) {
@@ -172,8 +175,9 @@ class KuiperUpgradeCommand extends Command
                          ->in('src/application')
                          ->name('*.php')
                          ->files() as $file) {
-                if (false !== strpos(file_get_contents((string) $file), 'kuiper\\web\\annotation\\filter')) {
-                    file_put_contents(FixWebFilterNamespace::fix($file), $file);
+                $fileName = (string) $file;
+                if (false !== strpos(file_get_contents($fileName), 'kuiper\\web\\annotation\\filter')) {
+                    file_put_contents($fileName, FixWebFilterNamespace::fix($fileName));
                 }
             }
         }
