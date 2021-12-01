@@ -97,6 +97,8 @@ class KuiperUpgradeCommand extends Command
                      'php' => '>=7.2',
                      'winwin/job-queue' => '^0.5',
                      'winwin/ddd' => '^0.2',
+                     'winwin/lock' => '^0.2',
+                     'winwin/profiler' => '^0.4',
                      'winwin/jsonrpc-client' => '^0.2',
                      'winwin/admin-support' => '^0.3',
                      'winwin/file-system' => '^0.4',
